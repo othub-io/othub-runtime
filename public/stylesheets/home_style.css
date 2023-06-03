@@ -1,0 +1,138 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+  }
+  
+  #navbar {
+    background-color: #FFFFFF;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+    height: 80px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    z-index: 9999;
+    position:relative;
+  }
+  
+  #navbar h1 {
+    font-size: 28px;
+    font-weight: bold;
+    color: #6168ED;
+    margin: 0;
+  }
+  
+  #connect-btn {
+    font-size: 20px;
+    color: #6168ED;
+    background-color: #FFFFFF;
+    border: 2px solid #6168ED;
+    border-radius: 8px;
+    padding: 5px 20px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    margin-right: 20px;
+  }
+  
+  #connect-btn:hover {
+    background-color: #6168ED;
+    color: #FFFFFF;
+  }
+  
+  #sidebar {
+    background-color: #F5F5F5;
+    box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.2);
+    height: calc(100vh - 80px);
+    width: 200px;
+    position: fixed;
+    top: 70px;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 40px 0;
+    z-index: 2;
+  }
+  
+  #sidebar a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6168ED;
+    text-decoration: none;
+    height: 40px;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  
+  #sidebar a:hover {
+    font-size: 18px;
+  }
+  
+  #sidebar img {
+    margin-right: 10px;
+    height: 20px;
+    width: 20px;
+  }
+  
+  /* Dropdown styles */
+  .dropdown {
+    position: relative;
+  }
+  
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    top: 20px;
+    left: 80px;
+    background-color: #FFFFFF;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+    min-width: 150px;
+    z-index: 3;
+    line-height: 50px;
+  }
+  
+  .dropdown-content a {
+    color: #6168ED;
+    text-decoration: none;
+    height: 20px;
+  }
+  
+  
+  .dropdown:hover .dropdown-content {
+    display: block;
+  }
+
+  #loading-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  #loading-circle {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #6168ED;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+  
+    100% {
+      transform: rotate(360deg);
+    }
+  }

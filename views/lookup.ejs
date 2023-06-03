@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+
+    <title>otnode.com</title>
+    <meta content="" name="description" />
+    <meta content="" name="keywords" />
+
+    <!-- Favicons -->
+    <link href="/image/favicon.png" rel="icon" />
+    <link href="/image/apple-touch-icon.png" rel="apple-touch-icon" />
+
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i"
+      rel="stylesheet"
+    />
+
+    <!-- Vendor CSS Files -->
+    <link href="/vendor/aos/aos.css" rel="stylesheet" />
+    <link href="/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet" />
+    <link href="/vendor/boxicons/css/boxicons.min.css" rel="stylesheet" />
+    <link href="/vendor/glightbox/css/glightbox.min.css" rel="stylesheet" />
+    <link href="/vendor/remixicon/remixicon.css" rel="stylesheet" />
+    <link href="/vendor/swiper/swiper-bundle.min.css" rel="stylesheet" />
+
+    <!-- Template Main CSS File -->
+    <link href="/public/stylesheets/style.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/stylesheets/style.css" type="text/css" />
+    <link rel="stylesheet" href="/stylesheets/style.scss" type="text/css" />
+    <link rel="stylesheet" href="/javascripts/main.js" type="text/css" />
+
+    <!-- =======================================================
+  * Template Name: OnePage - v4.7.0
+  * Template URL: https://bootstrapmade.com/onepage-multipurpose-bootstrap-template/
+  * Author: BootstrapMade.com
+  * License: https://bootstrapmade.com/license/
+  ======================================================== -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    let data;
+    let owner_address;
+    let chain_id;
+
+    data = `<%- JSON.stringify(locals.data) %>`
+    owner_address = localStorage.getItem('owner_address');
+    chain_id = localStorage.getItem('chain_id');
+
+    console.log(data)
+  </script>
+  </head>
+
+  <body>
+    <!-- ======= Header ======= -->
+    <header style="background: none;">
+      <div class="d-flex align-items-center justify-content-between" >
+        <a href="/search" style="color: #6168ed;margin-left:2.5%;font-size:28px;font-family: OCR A Std, monospace;">otnode.com</a>
+        <div class="form-group" style="margin-left: 80px;">
+          <div class="input-group" style="white-space:nowrap;" id="searchbar">
+
+          </div>
+        </div>
+        <a href="/search" class="logo" style="color: #6168ed"></a>
+        <!--<h1 class="logo"><a href="img/Logo.jpg">Public DKG Beta</a></h1>-->
+        <!-- Uncomment below if you prefer to use an image logo -->
+        <a href="/search" class="logo" style="color: #6168ed"></a>
+
+        <nav id="navbar" class="navbar">
+          <ul>
+            <li id="MM">
+
+            </li>
+            <li id="explore">
+
+            </li>
+          </ul>
+        </nav>
+        <!-- .navbar -->
+      </div>
+    </header>
+    <html>
+    <body>
+    <!-- End Header -->
+    <main id="main">
+        
+        <form id="owner_login_form" action="/lookup" method="GET">
+          
+        </form>
+      </main>
+    <!-- End #main -->
+
+    <!-- ======= Footer ======= -->
+    <footer id="footer" style="position: fixed; bottom: 0; width: 100%">
+      <div class="container d-md-flex py-4">
+
+        </div>
+      </div>
+    </footer>
+    <!-- End Footer -->
+
+    <!-- Vendor JS Files -->
+    <script src="vendor/purecounter/purecounter.js"></script>
+    <script src="vendor/aos/aos.js"></script>
+    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="vendor/glightbox/js/glightbox.min.js"></script>
+    <script src="vendor/isotope-layout/isotope.pkgd.min.js"></script>
+    <script src="vendor/swiper/swiper-bundle.min.js"></script>
+    <script src="vendor/php-email-form/validate.js"></script>
+
+    <!-- Template Main JS File -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="/javascripts/main.js"></script>
+    <script src="/javascripts/lookup.js"></script>
+    <script>
+      nav(owner_address, chain_id);
+      if(data){
+        data = JSON.parse(data)
+      }    
+      body(data)
+
+      if(`<%- locals.data %>` == "blocked"){
+        var z = document.getElementById("blocked");
+        z.style.display = "block";
+        }
+    </script>
+    <script>
+        //function pleasewait();
+    </script>
+  </body>
+</html>

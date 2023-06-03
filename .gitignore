@@ -1,0 +1,5 @@
+node_modules
+public/database/girraph.db
+public/database/blockheart.db
+public/database/alliance.db
+.env

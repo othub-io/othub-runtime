@@ -1,0 +1,12 @@
+{
+    "@context": "https://schema.org",
+    "@type": "Vote",
+    "voter": "",
+    "proposal": "",
+    "votes":{
+        "yes": 0,
+        "no": 0
+    },
+    "url": "www.girraph.com/dao",
+    "subjectOf": "Cosmic Angels improvement proposal"
+  }

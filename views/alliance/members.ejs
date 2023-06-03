@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>otnode.com</title>
+    <link href="/public/stylesheets/alliance/members_style.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/stylesheets/alliance/members_style.css" type="text/css" />
+    <script>
+        let admin_key = localStorage.getItem('admin_key');
+        let chain_id = localStorage.getItem('chain_id');
+        allianceNodes = `<%- JSON.stringify(locals.allianceNodes) %>`
+        allianceStats = `<%- JSON.stringify(locals.allianceStats) %>`
+        allianceOperators = `<%- JSON.stringify(locals.allianceOperators) %>`
+        v_nodes = `<%- JSON.stringify(locals.v_nodes) %>`
+    </script>
+  </head>
+  <body>
+    <div id="navbar">
+        <h1><a href="/" style="color: #6168ED;text-decoration: none;">otnode.com</a></h1>
+        <button class="connectWalletButton" id="connect-btn" onclick="get_account()">Connect</button>
+      </div>
+      <div id="sidebar">
+        
+      </div>
+      <main id="main" style="height: calc(100vh - 85px);width:90%;float:right;z-index:1;">
+    
+      </main>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="/javascripts/alliance/members.js"></script>
+    <script>
+      sidebar(admin_key)
+        if(admin_key){
+          loggedIn(admin_key,chain_id)
+          renderPage(admin_key,allianceNodes, allianceStats, allianceOperators, v_nodes)
+        }else{
+          renderPage('',allianceNodes, allianceStats, allianceOperators, v_nodes)
+        }
+
+        function logout () {
+          document.getElementById('navbar').innerHTML = ''
+          document.getElementById('main').innerHTML = ''
+          localStorage.removeItem('admin_key')
+          localStorage.removeItem('chain_id')
+          localStorage.removeItem('api_key')
+          element = `
+            <h1>otnode.com</h1>
+            <button class="connectWalletButton" id="connect-btn" onclick="get_account()">Connect</button>
+            `
+          $('#navbar').append(element)
+          renderPage('',allianceNodes, allianceStats, allianceOperators, v_nodes)
+        }
+
+        function showLoadingCircle() {
+        const loadingContainer = document.createElement("div");
+        loadingContainer.setAttribute("id", "loading-container");
+        loadingContainer.style.display = "flex";
+        loadingContainer.style.flexDirection = "column";
+        loadingContainer.style.alignItems = "center";
+        loadingContainer.style.justifyContent = "center";
+
+        const loadingText = document.createElement("p");
+        loadingText.textContent = "Loading...";
+        loadingText.style.fontSize = "20px";
+        loadingText.style.fontWeight = "bold";
+        loadingText.style.color = "#6168ED";
+        loadingContainer.appendChild(loadingText);
+
+        const loadingCircleContainer = document.createElement("div");
+        loadingCircleContainer.style.marginTop = "20px";
+        const loadingCircle = document.createElement("div");
+        loadingCircle.setAttribute("id", "loading-circle");
+        loadingCircleContainer.appendChild(loadingCircle);
+        loadingContainer.appendChild(loadingCircleContainer);
+
+        document.body.appendChild(loadingContainer);
+      }
+
+      function hideLoadingCircle() {
+        const loadingContainer = document.getElementById("loading-container");
+        document.body.removeChild(loadingContainer);
+      }
+    </script>
+     <script src="/javascripts/metamask.js"></script>
+  </body
