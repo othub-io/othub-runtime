@@ -68,8 +68,20 @@ router.get('/', async function (req, res, next) {
     ip = req.headers['x-forwarded-for']
   }
 
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE')
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept'
+  )
+
   url_params = purl.parse(req.url, true).query
   admin_key = url_params.admin_key
+  chain_id = url_params.chain_id
+  botToken = url_params.botToken
+  telegramID = url_params.telegramID
+  joinAlliance = url_params.joinAlliance
+
   nodeRecords = []
   operatorRecord = []
 
@@ -80,6 +92,30 @@ router.get('/', async function (req, res, next) {
       msg: ` `
     })
     return
+  }
+
+  if (botToken) {
+    query =
+      'INSERT INTO node_operators (adminKey,botToken) VALUES (?,?) ON DUPLICATE KEY UPDATE botToken = ?'
+    await otnodedb_connection.query(
+      query,
+      [admin_key, botToken, botToken],
+      function (error, results, fields) {
+        if (error) throw error
+      }
+    )
+  }
+
+  if (telegramID) {
+    query =
+      'INSERT INTO node_operators (adminKey,telegramID) VALUES (?,?) ON DUPLICATE KEY UPDATE telegramID = ?'
+    await otnodedb_connection.query(
+      query,
+      [admin_key, telegramID, telegramID],
+      function (error, results, fields) {
+        if (error) throw error
+      }
+    )
   }
 
   keccak256hash = keccak256(admin_key).toString('hex')
@@ -102,6 +138,27 @@ router.get('/', async function (req, res, next) {
     .catch(error => {
       console.error('Error retrieving data:', error)
     })
+
+  if (joinAlliance) {
+    if (nodeIds == '') {
+      res.json({
+        nodeRecords: nodeRecords,
+        operatorRecord: operatorRecord,
+        msg: `You cannot join the Alliance without a V6 Mainnet OTNode.`
+      })
+      return
+    }
+
+    query =
+      'INSERT INTO node_operators (adminKey,keccak256hash,nodeGroup) VALUES (?,?,?) ON DUPLICATE KEY UPDATE nodeGroup = ?'
+    await otnodedb_connection.query(
+      query,
+      [admin_key, keccak256hash, joinAlliance, joinAlliance],
+      function (error, results, fields) {
+        if (error) throw error
+      }
+    )
+  }
 
   console.log(nodeIds)
   query = `select * from node_operators where adminKey= ?`
@@ -160,7 +217,7 @@ router.get('/', async function (req, res, next) {
   res.json({
     nodeRecords: nodeRecords,
     operatorRecord: operatorRecord,
-    msg: ` `
+    msg: ``
   })
   return
 })
@@ -171,6 +228,13 @@ router.post('/', async function (req, res, next) {
   if (process.env.SSL_KEY_PATH) {
     ip = req.headers['x-forwarded-for']
   }
+
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE')
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept'
+  )
 
   admin_key = req.body.admin_key
   chain_id = req.body.chain_id
