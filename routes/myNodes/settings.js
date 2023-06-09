@@ -153,12 +153,12 @@ router.get('/', async function (req, res, next) {
       console.error('Error retrieving data:', error)
     })
 
-  if (nodeIds && operatorRecord == '') {
+  if (nodeIds != '' && operatorRecord == '') {
     query =
       'INSERT INTO node_operators (adminKey,keccak256hash,telegramID,botToken,nodeGroup) VALUES (?,?,?,?,?)'
     await otnodedb_connection.query(
       query,
-      [admin_key, keccak256hash, null, null, 'Solo'],
+      [admin_key, keccak256hash, 'Not Set', 'Not Set', 'Solo'],
       function (error, results, fields) {
         if (error) throw error
       }
