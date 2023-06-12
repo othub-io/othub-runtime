@@ -1,0 +1,11 @@
+[Unit]
+Description=otnode.io front end
+
+[Service]
+Type=simple
+WorkingDirectory=/root/otnode-runtime
+ExecStart=/root/otnode-app/otnode-runtime.sh
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

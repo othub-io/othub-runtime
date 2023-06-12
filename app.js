@@ -33,22 +33,13 @@ const apiKeysRouter = require('./routes/api/keys')
 
 const app = express()
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'))
-app.set('view engine', 'ejs')
-
 app.use(logger('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(express.static(path.join(__dirname, 'node_modules')))
-app.use('/css', express.static(__dirname + 'public/stylesheets'))
-app.use('/js', express.static(__dirname + 'public/javascripts'))
-app.use('/img', express.static(__dirname + 'public/images'))
-app.use('/vender', express.static(__dirname + 'public/vender'))
 app.use('/dkg', express.static(__dirname + 'node_modules/dkg.js'))
-app.use('/util', express.static(__dirname + 'public/util'))
 
 app.use('/', homeRouter)
 app.use('/nodes', nodesRouter)
