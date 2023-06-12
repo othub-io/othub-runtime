@@ -11,6 +11,7 @@ const logger = require('morgan')
 //const apiPortalRouter = require('./routes/apiPortal')
 const apiRouter = require('./routes/api')
 const homeRouter = require('./routes/dashboard')
+const nodesRouter = require('./routes/nodes')
 
 //const dashboardRouter = require('./routes/dashboard')
 //const lookupRouter = require('./routes/lookup')
@@ -22,8 +23,12 @@ const mynodesSettingsRouter = require('./routes/myNodes/settings')
 
 //alliance
 const allianceMembersRouter = require('./routes/alliance/members')
-const allianceRegisterRouter = require('./routes/alliance/register')
-const allianceDashboardRouter = require('./routes/alliance/dashboard')
+
+//api keys
+const apiKeysRouter = require('./routes/api/keys')
+
+//const allianceRegisterRouter = require('./routes/alliance/register')
+//const allianceDashboardRouter = require('./routes/alliance/dashboard')
 //const daoRouter = require('./routes/alliance/dao')
 
 const app = express()
@@ -46,11 +51,12 @@ app.use('/dkg', express.static(__dirname + 'node_modules/dkg.js'))
 app.use('/util', express.static(__dirname + 'public/util'))
 
 app.use('/', homeRouter)
+app.use('/nodes', nodesRouter)
 //app.use('/dashboard', dashboardRouter)
 //app.use('/users', usersRouter)
 //app.use('/explore', exploreRouter)
 //app.use('/apiPortal', apiPortalRouter)
-app.use('/api', apiRouter)
+app.use('/api/keys', apiKeysRouter)
 
 //app.use('/lookup', lookupRouter)
 //app.use('/publish', publishRouter)
@@ -61,8 +67,8 @@ app.use('/myNodes/settings', mynodesSettingsRouter)
 
 //alliance
 app.use('/alliance/members', allianceMembersRouter)
-app.use('/alliance/register', allianceRegisterRouter)
-app.use('/alliance/dashboard', allianceDashboardRouter)
+//app.use('/alliance/register', allianceRegisterRouter)
+//app.use('/alliance/dashboard', allianceDashboardRouter)
 //app.use('/alliance/dao', daoRouter)
 
 // catch 404 and forward to error handler

@@ -69,9 +69,37 @@ router.get('/', async function (req, res, next) {
     ip = req.headers['x-forwarded-for']
   }
 
+  url_params = purl.parse(req.url, true).query
+  admin_key = url_params.admin_key
+  group = url_params.group
+
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE')
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept'
+  )
+
   console.log(`Visitor:${ip} landed on the alliance page.`)
   let allianceNodes
   let v_nodes
+
+  if (admin_key) {
+    keccak256hash = keccak256(admin_key).toString('hex')
+    keccak256hash = '0x' + keccak256hash
+  }
+
+  if (group) {
+    query =
+      'INSERT INTO node_operators (adminKey,keccak256hash,nodeGroup) VALUES (?,?,?) ON DUPLICATE KEY UPDATE nodeGroup = ?'
+    await otnodedb_connection.query(
+      query,
+      [admin_key, keccak256hash, group, group],
+      function (error, results, fields) {
+        if (error) throw error
+      }
+    )
+  }
 
   query = `select * from otnodedb.node_operators
   where nodeGroup= ?`
@@ -137,7 +165,7 @@ router.get('/', async function (req, res, next) {
         console.error('Error retrieving data:', error)
       })
 
-    totalAsk = totalAsk + Number(node[0].Ask)
+    totalAsk = totalAsk + Number(node[0].ask)
     totalStake = totalStake + Number(node[0].nodeStake)
     allianceNodes.push(node[0])
   }
@@ -184,7 +212,7 @@ router.get('/', async function (req, res, next) {
       console.error('Error retrieving data:', error)
     })
 
-  res.render('alliance/members', {
+  res.json({
     allianceNodes: allianceNodes,
     allianceOperators: allianceOperators,
     allianceStats: allianceStats,
