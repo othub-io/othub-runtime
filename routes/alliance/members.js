@@ -146,6 +146,7 @@ router.get('/', async function (req, res, next) {
     }
   }
 
+  console.log(allNodeIds)
   totalAsk = 0
   totalStake = 0
   allianceNodes = []
