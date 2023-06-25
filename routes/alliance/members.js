@@ -154,7 +154,7 @@ router.get('/', async function (req, res, next) {
     nodeId = allNodeIds[i].nodeId
 
     console.log(nodeId)
-    query = `select * from v_nodes_stats where nodeId=? order by date desc LIMIT 1`
+    query = `select * from v_nodes_stats where nodeId=? and nodeStake >= 50000 order by date desc LIMIT 1`
     params = [nodeId]
     node = await getOTPData(query, params)
       .then(results => {
