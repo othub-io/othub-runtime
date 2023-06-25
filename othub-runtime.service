@@ -1,0 +1,11 @@
+[Unit]
+Description=othub.io back end
+
+[Service]
+Type=simple
+WorkingDirectory=/root/othub-runtime
+ExecStart=/root/othub-runtime/othub-runtime.sh
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
