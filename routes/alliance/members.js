@@ -74,11 +74,6 @@ router.get('/', async function (req, res, next) {
   group = url_params.group
 
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE')
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept'
-  )
 
   console.log(`Visitor:${ip} landed on the alliance page.`)
   let allianceNodes

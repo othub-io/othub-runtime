@@ -43,11 +43,6 @@ router.get('/', async function (req, res, next) {
   orderby = url_params.orderby
 
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE')
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept'
-  )
 
   query = `select * from v_nodes where nodeStake >= 50000 order by ? desc`
   params = [orderby]
