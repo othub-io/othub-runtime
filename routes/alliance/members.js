@@ -114,68 +114,87 @@ router.get('/', async function (req, res, next) {
       console.error('Error retrieving data:', error)
     })
 
-  allNodeIds = []
-  for (i = 0; i < allianceOperators.length; ++i) {
-    allianceOperator = allianceOperators[i]
-    admin_key = allianceOperator.adminKey
+  // allNodeIds = []
+  // for (i = 0; i < allianceOperators.length; ++i) {
+  //   allianceOperator = allianceOperators[i]
+  //   admin_key = allianceOperator.adminKey
 
-    keccak256hash = keccak256(admin_key).toString('hex')
-    keccak256hash = '0x' + keccak256hash
-    like_keccak256hash = '%' + keccak256hash + '%'
+  //   keccak256hash = keccak256(admin_key).toString('hex')
+  //   keccak256hash = '0x' + keccak256hash
+  //   like_keccak256hash = '%' + keccak256hash + '%'
 
-    query = `select nodeId from v_nodes where createProfile_adminWallet=? and (removedWalletsHashes not like ? or removedWalletsHashes is null) UNION select nodeId from v_nodes where addedAdminWalletsHashes like ? and (removedWalletsHashes not like ? or removedWalletsHashes is null)  `
-    params = [
-      admin_key,
-      like_keccak256hash,
-      like_keccak256hash,
-      like_keccak256hash
-    ]
-    nodeIds = await getOTPData(query, params)
-      .then(results => {
-        //console.log('Query results:', results);
-        return results
-        // Use the results in your variable or perform further operations
-      })
-      .catch(error => {
-        console.error('Error retrieving data:', error)
-      })
+  //   query = `select nodeId from v_nodes where createProfile_adminWallet=? and (removedWalletsHashes not like ? or removedWalletsHashes is null) UNION select nodeId from v_nodes where addedAdminWalletsHashes like ? and (removedWalletsHashes not like ? or removedWalletsHashes is null)  `
+  //   params = [
+  //     admin_key,
+  //     like_keccak256hash,
+  //     like_keccak256hash,
+  //     like_keccak256hash
+  //   ]
+  //   nodeIds = await getOTPData(query, params)
+  //     .then(results => {
+  //       //console.log('Query results:', results);
+  //       return results
+  //       // Use the results in your variable or perform further operations
+  //     })
+  //     .catch(error => {
+  //       console.error('Error retrieving data:', error)
+  //     })
 
-    for (x = 0; x < nodeIds.length; ++x) {
-      nodeId = nodeIds[x]
-      allNodeIds.push(nodeId)
-    }
-  }
+  //   for (x = 0; x < nodeIds.length; ++x) {
+  //     nodeId = nodeIds[x]
+  //     allNodeIds.push(nodeId)
+  //   }
+  // }
 
-  console.log(allNodeIds)
+  // console.log(allNodeIds)
+  // totalAsk = 0
+  // totalStake = 0
+  // allianceNodes = []
+  // for (i = 0; i < allNodeIds.length; ++i) {
+  //   nodeId = allNodeIds[i].nodeId
+
+  //   console.log(nodeId)
+  //   query = `select * from v_nodes_stats where nodeId=? and nodeStake >= 50000 order by date desc LIMIT 1`
+  //   params = [nodeId]
+  //   node = await getOTPData(query, params)
+  //     .then(results => {
+  //       //console.log('Query results:', results);
+  //       return results
+  //       // Use the results in your variable or perform further operations
+  //     })
+  //     .catch(error => {
+  //       console.error('Error retrieving data:', error)
+  //     })
+
+  //   totalAsk = totalAsk + Number(node[0].ask)
+  //   totalStake = totalStake + Number(node[0].nodeStake)
+  //   allianceNodes.push(node[0])
+  // }
+
+  query = `select * from v_nodes_stats where date = (select block_date from txs_staging order by block_date desc limit 1)and nodeGroup = ?`
+  params = ['Alliance']
+  allianceNodes = await getOTPData(query, params)
+    .then(results => {
+      //console.log('Query results:', results);
+      return results
+      // Use the results in your variable or perform further operations
+    })
+    .catch(error => {
+      console.error('Error retrieving data:', error)
+    })
+
   totalAsk = 0
   totalStake = 0
-  allianceNodes = []
-  for (i = 0; i < allNodeIds.length; ++i) {
-    nodeId = allNodeIds[i].nodeId
+  for (i = 0; i < allianceNodes.length; ++i) {
+    node = allianceNodes[i]
 
-    console.log(nodeId)
-    query = `select * from v_nodes_stats where nodeId=? and nodeStake >= 50000 order by date desc LIMIT 1`
-    params = [nodeId]
-    node = await getOTPData(query, params)
-      .then(results => {
-        //console.log('Query results:', results);
-        return results
-        // Use the results in your variable or perform further operations
-      })
-      .catch(error => {
-        console.error('Error retrieving data:', error)
-      })
-
-    totalAsk = totalAsk + Number(node[0].ask)
-    totalStake = totalStake + Number(node[0].nodeStake)
-    allianceNodes.push(node[0])
+    totalAsk = totalAsk + Number(node.ask)
+    totalStake = totalStake + Number(node.nodeStake)
   }
 
   avgAsk = totalAsk / Number(allianceNodes.length).toFixed(3)
   avgStake = totalStake / Number(allianceNodes.length)
 
-  console.log(totalStake)
-  console.log(avgStake)
   function formatNumber (number) {
     if (number >= 1000) {
       const suffixes = ['', 'K', 'M', 'B', 'T']
@@ -192,8 +211,6 @@ router.get('/', async function (req, res, next) {
 
   totalStake = await formatNumber(parseFloat(totalStake))
   avgStake = await formatNumber(parseFloat(avgStake))
-  console.log(totalStake)
-  console.log(avgStake)
 
   allianceStats = {
     totalStake: totalStake,
