@@ -8,14 +8,14 @@ const otnodedb_connection = mysql.createConnection({
   host: process.env.DBHOST,
   user: process.env.USER,
   password: process.env.PASSWORD,
-  database: 'otnodedb'
+  database: process.env.OTHUB_DB
 })
 
 const otp_connection = mysql.createConnection({
   host: process.env.DBHOST,
   user: process.env.USER,
   password: process.env.PASSWORD,
-  database: 'otp'
+  database: process.env.SYNC_DB
 })
 
 function executeOTNODEQuery (query, params) {
@@ -113,63 +113,6 @@ router.get('/', async function (req, res, next) {
     .catch(error => {
       console.error('Error retrieving data:', error)
     })
-
-  // allNodeIds = []
-  // for (i = 0; i < allianceOperators.length; ++i) {
-  //   allianceOperator = allianceOperators[i]
-  //   admin_key = allianceOperator.adminKey
-
-  //   keccak256hash = keccak256(admin_key).toString('hex')
-  //   keccak256hash = '0x' + keccak256hash
-  //   like_keccak256hash = '%' + keccak256hash + '%'
-
-  //   query = `select nodeId from v_nodes where createProfile_adminWallet=? and (removedWalletsHashes not like ? or removedWalletsHashes is null) UNION select nodeId from v_nodes where addedAdminWalletsHashes like ? and (removedWalletsHashes not like ? or removedWalletsHashes is null)  `
-  //   params = [
-  //     admin_key,
-  //     like_keccak256hash,
-  //     like_keccak256hash,
-  //     like_keccak256hash
-  //   ]
-  //   nodeIds = await getOTPData(query, params)
-  //     .then(results => {
-  //       //console.log('Query results:', results);
-  //       return results
-  //       // Use the results in your variable or perform further operations
-  //     })
-  //     .catch(error => {
-  //       console.error('Error retrieving data:', error)
-  //     })
-
-  //   for (x = 0; x < nodeIds.length; ++x) {
-  //     nodeId = nodeIds[x]
-  //     allNodeIds.push(nodeId)
-  //   }
-  // }
-
-  // console.log(allNodeIds)
-  // totalAsk = 0
-  // totalStake = 0
-  // allianceNodes = []
-  // for (i = 0; i < allNodeIds.length; ++i) {
-  //   nodeId = allNodeIds[i].nodeId
-
-  //   console.log(nodeId)
-  //   query = `select * from v_nodes_stats where nodeId=? and nodeStake >= 50000 order by date desc LIMIT 1`
-  //   params = [nodeId]
-  //   node = await getOTPData(query, params)
-  //     .then(results => {
-  //       //console.log('Query results:', results);
-  //       return results
-  //       // Use the results in your variable or perform further operations
-  //     })
-  //     .catch(error => {
-  //       console.error('Error retrieving data:', error)
-  //     })
-
-  //   totalAsk = totalAsk + Number(node[0].ask)
-  //   totalStake = totalStake + Number(node[0].nodeStake)
-  //   allianceNodes.push(node[0])
-  // }
 
   query = `select * from v_nodes_stats where date = (select block_date from txs_staging order by block_date desc limit 1)and nodeGroup = ?`
   params = ['Alliance']

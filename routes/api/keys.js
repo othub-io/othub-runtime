@@ -7,7 +7,7 @@ const otnodedb_connection = mysql.createConnection({
   host: process.env.DBHOST,
   user: process.env.USER,
   password: process.env.PASSWORD,
-  database: 'otnodedb',
+  database: process.env.OTHUB_DB,
   port: '3306',
   insecureAuth: true
 })
