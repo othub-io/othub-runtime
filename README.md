@@ -3,8 +3,8 @@
 OTHub bot is a community managed NodeJS backend specifically built to work in tandem with the othub-react and otp-sync repos.
 
 ### OTHub Runtime will be designed with a few functionalities in mind:
-- Facilitate all current and future data requests between OTHub's front end (othub-react) and the mysql database maintain about the OTP Sync (otp-sync);
-- Generate API keys required for requrest from the OTHub API (othub-api);
+- Facilitate all current and future data requests between OTHub's front end (othub-react) and the mysql database maintained by OTP Sync (otp-sync);
+- Generate API keys required to request data from the OTHub API (othub-api);
 - Faciliate all dkg get/publish/get requests via the dkg.js SDK to an OTHub hosted node for both Mainnet and Testnet;
 
 ### Timeline
