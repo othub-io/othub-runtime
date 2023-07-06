@@ -9,14 +9,14 @@ const otnodedb_connection = mysql.createConnection({
   host: process.env.DBHOST,
   user: process.env.USER,
   password: process.env.PASSWORD,
-  database: 'otnodedb'
+  database: process.env.OTHUB_DB
 })
 
 const otp_connection = mysql.createConnection({
   host: process.env.DBHOST,
   user: process.env.USER,
   password: process.env.PASSWORD,
-  database: 'otp'
+  database: process.env.SYNC_DB
 })
 
 function executeOTNODEQuery (query, params) {
