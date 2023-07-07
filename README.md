@@ -1,22 +1,16 @@
 # OTHub Runtime
 
-OTHub bot is a community managed NodeJS backend specifically built to work in tandem with the othub-react and otp-sync repos.
+OTHub Runtime is a community managed NodeJS backend specifically built to work in tandem with the [othub-react](https://github.com/othub-io/othub-react) and [otp-sync](https://github.com/othub-io/otp-sync) repositories. It is a critical infrastructure for [OTHub](https://github.com/othub-io). 
 
-### OTHub Runtime will be designed with a few functionalities in mind:
-- Facilitate all current and future data requests between OTHub's front end (othub-react) and the mysql database maintained by OTP Sync (otp-sync);
-- Generate API keys required to request data from the OTHub API (othub-api);
-- Faciliate all dkg get/publish/get requests via the dkg.js SDK to an OTHub hosted node for both Mainnet and Testnet;
-
-### Timeline
-- Timelines for the runtime will coincide tightly with timelines for features described on the othub-repo.
-
-### Expected Impact
-OTHub Runtime is critical infrastructure for OTHub.io and will continue to be priority in the future development of OTHub.
+### OTHub Runtime:
+- Facilitates all current and future data requests between OTHub's front end, [othub-react](https://github.com/othub-io/othub-react) and the MySQL database maintained by [otp-sync](https://github.com/othub-io/otp-sync);
+- Generates API keys required to request data from [othub-api](https://github.com/othub-io/othub-api);
+- Faciliates all DKG get/publish requests via the dkg.js SDK to an OTHub hosted node for both Mainnet and Testnet;
 
 ### Instructions
 > **Warning**
 > 
-> Please be aware that the instructions below are for users with a full sync of the OriginTrail Parachain blockchain by using otp-sync or any other indexing method which is required to run this backend. 
+> Please be aware that the instructions below are for users with a fully synchronized OriginTrail Parachain blockchain by using [otp-sync](https://github.com/othub-io/otp-sync) or any other indexing method which is required to run this backend. 
 
 Set up your working environment
 ```
