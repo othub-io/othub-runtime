@@ -85,7 +85,7 @@ router.get('/', async function (req, res, next) {
         console.error('Error retrieving data:', error)
       })
 
-      query = `select * from v_pubs_stats order by date desc limit 1`
+    query = `select * from v_pubs_stats order by date desc limit 1`
     params = []
     v_pubs_stats_24h = await getOTPData(query, params)
       .then(results => {
@@ -132,6 +132,7 @@ router.get('/', async function (req, res, next) {
 
   res.json({
     v_nodes: v_nodes,
+    v_pubs_stats: v_pubs_stats,
     pub_count: pub_count,
     tracSpent: tracSpent,
     totalPubs_24h: totalPubs_24h,
