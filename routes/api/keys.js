@@ -62,7 +62,6 @@ router.get('/', async function (req, res, next) {
 
   url_params = purl.parse(req.url, true).query
   admin_key = url_params.admin_key
-  chain_id = url_params.chain_id
   app_name = url_params.app_name
   deleteKey = url_params.deleteKey
 
@@ -93,7 +92,6 @@ router.get('/', async function (req, res, next) {
     res.json({
       userRecords: userRecords,
       admin_key: admin_key,
-      chain_id: chain_id,
       msg: `SUCCESS! Your API Key was deleted.`
     })
     return
@@ -139,7 +137,6 @@ router.get('/', async function (req, res, next) {
         res.json({
           userRecords: userRecords,
           admin_key: admin_key,
-          chain_id: chain_id,
           msg: `FAIL! You may only have 1 api key at a time.`
         })
         return
@@ -149,8 +146,7 @@ router.get('/', async function (req, res, next) {
         res.json({
           userRecords: userRecords,
           admin_key: admin_key,
-          chain_id: chain_id,
-          msg: `FAIL! You may only have 2 api key at a time.`
+          msg: `FAIL! You may only have 2 api keys at a time.`
         })
         return
       }
@@ -182,9 +178,9 @@ router.get('/', async function (req, res, next) {
     res.json({
       userRecords: userRecords,
       admin_key: admin_key,
-      chain_id: chain_id,
       msg: `SUCCESS! A new API Key has been created!`
     })
+    return;
   }
 
   query = `SELECT * FROM user_header WHERE admin_key = ?`
