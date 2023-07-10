@@ -195,7 +195,7 @@ Looks like you've added or changed your bot token. Here are commands to run to i
           msg = msg + `
 
 <-------Run this for Node ${nodeIds[i].tokenName}------->
-wget -O /etc/cron.hourly/node-hourly-monitor https://raw.githubusercontent.com/othub-io/othub-runtime/master/scripts/node-monitor-hourly && 
+wget -O /etc/cron.hourly/node-hourly-monitor https://raw.githubusercontent.com/othub-io/othub-runtime/master/public/scripts/node-monitor-hourly.sh && 
 chmod +x /etc/cron.hourly/node-hourly-monitor &&
 mkdir -p /etc/othub && 
 echo -e "CHAT_ID="${operatorRecord[0].telegramID}" \nBOT_ID="${botToken}" \nNODE_ID="${nodeIds[i].nodeId}" \nAPI_KEY="${api_key}" \nMAX_STORAGE_PERCENT="90"" > /etc/othub/config
@@ -326,7 +326,7 @@ Welcome to the Alliance! Here are commands to run to install the othub node moni
           msg = msg + `
 
 <-------Run this for Node ${nodeIds[i].tokenName}------->
-wget -O /etc/cron.hourly/node-hourly-monitor https://raw.githubusercontent.com/othub-io/othub-runtime/master/scripts/node-monitor-hourly && 
+wget -O /etc/cron.hourly/node-hourly-monitor https://raw.githubusercontent.com/othub-io/othub-runtime/master/public/scripts/node-monitor-hourly.sh && 
 chmod +x /etc/cron.hourly/node-hourly-monitor && 
 mkdir -p /etc/othub &&
 echo -e "CHAT_ID="${operatorRecord[0].telegramID}" \nBOT_ID="${operatorRecord[0].botToken}" \nNODE_ID="${nodeIds[i].nodeId}" \nAPI_KEY="${api_key}" \nMAX_STORAGE_PERCENT="90"" > /etc/othub/config
