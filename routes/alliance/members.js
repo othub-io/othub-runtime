@@ -4,23 +4,23 @@ var router = express.Router()
 const purl = require('url')
 const keccak256 = require('keccak256')
 const mysql = require('mysql')
-const otnodedb_connection = mysql.createConnection({
+const othubdb_connection = mysql.createConnection({
   host: process.env.DBHOST,
-  user: process.env.USER,
-  password: process.env.PASSWORD,
+  user: process.env.DBUSER,
+  password: process.env.DBPASSWORD,
   database: process.env.OTHUB_DB
 })
 
 const otp_connection = mysql.createConnection({
   host: process.env.DBHOST,
-  user: process.env.USER,
-  password: process.env.PASSWORD,
+  user: process.env.DBUSER,
+  password: process.env.DBPASSWORD,
   database: process.env.SYNC_DB
 })
 
-function executeOTNODEQuery (query, params) {
+function executeOTHubQuery (query, params) {
   return new Promise((resolve, reject) => {
-    otnodedb_connection.query(query, params, (error, results) => {
+    othubdb_connection.query(query, params, (error, results) => {
       if (error) {
         reject(error)
       } else {
@@ -30,9 +30,9 @@ function executeOTNODEQuery (query, params) {
   })
 }
 
-async function getOTNODEData (query, params) {
+async function getOTHubData (query, params) {
   try {
-    const results = await executeOTNODEQuery(query, params)
+    const results = await executeOTHubQuery(query, params)
     return results
   } catch (error) {
     console.error('Error executing query:', error)
@@ -92,7 +92,7 @@ router.get('/', async function (req, res, next) {
   if (group) {
     query =
       'INSERT INTO node_operators (adminKey,keccak256hash,nodeGroup) VALUES (?,?,?) ON DUPLICATE KEY UPDATE nodeGroup = ?'
-    await otnodedb_connection.query(
+    await othubdb_connection.query(
       query,
       [admin_key, keccak256hash, group, group],
       function (error, results, fields) {

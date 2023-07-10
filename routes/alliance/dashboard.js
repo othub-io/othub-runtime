@@ -5,10 +5,10 @@ const purl = require('url')
 const { Telegraf } = require('telegraf')
 const bot = new Telegraf(process.env.BOT_TOKEN)
 const mysql = require('mysql')
-const otnodedb_connection = mysql.createConnection({
+const othubdb_connection = mysql.createConnection({
   host: process.env.DBHOST,
-  user: process.env.USER,
-  password: process.env.PASSWORD,
+  user: process.env.DBUSER,
+  password: process.env.DBPASSWORD,
   database: 'otnodedb'
 })
 const operationaldb2_connection = mysql.createConnection({

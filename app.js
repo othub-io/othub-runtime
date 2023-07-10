@@ -5,15 +5,10 @@ const path = require('path')
 const cookieParser = require('cookie-parser')
 const logger = require('morgan')
 
-//const indexRouter = require('./routes/index')
-//const usersRouter = require('./routes/users')
-//const exploreRouter = require('./routes/explore')
-//const apiPortalRouter = require('./routes/apiPortal')
-const apiRouter = require('./routes/api')
 const homeRouter = require('./routes/home')
 const nodesRouter = require('./routes/nodes')
 
-//const dashboardRouter = require('./routes/dashboard')
+//dkg
 //const lookupRouter = require('./routes/lookup')
 //const publishRouter = require('./routes/publish')
 //const searchRouter = require('./routes/search')
@@ -24,12 +19,12 @@ const mynodesSettingsRouter = require('./routes/myNodes/settings')
 //alliance
 const allianceMembersRouter = require('./routes/alliance/members')
 
-//api keys
+//api
 const apiKeysRouter = require('./routes/api/keys')
 
 //const allianceRegisterRouter = require('./routes/alliance/register')
 //const allianceDashboardRouter = require('./routes/alliance/dashboard')
-//const daoRouter = require('./routes/alliance/dao')
+//const voteRouter = require('./routes/alliance/vote')
 
 const app = express()
 
@@ -43,12 +38,11 @@ app.use('/dkg', express.static(__dirname + 'node_modules/dkg.js'))
 
 app.use('/home', homeRouter)
 app.use('/nodes', nodesRouter)
-//app.use('/dashboard', dashboardRouter)
-//app.use('/users', usersRouter)
-//app.use('/explore', exploreRouter)
-//app.use('/apiPortal', apiPortalRouter)
+
+//api
 app.use('/api/keys', apiKeysRouter)
 
+//dkg
 //app.use('/lookup', lookupRouter)
 //app.use('/publish', publishRouter)
 //app.use('/search', searchRouter)
@@ -58,9 +52,8 @@ app.use('/myNodes/settings', mynodesSettingsRouter)
 
 //alliance
 app.use('/alliance/members', allianceMembersRouter)
-//app.use('/alliance/register', allianceRegisterRouter)
 //app.use('/alliance/dashboard', allianceDashboardRouter)
-//app.use('/alliance/dao', daoRouter)
+//app.use('/alliance/vote', voteRouter)
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

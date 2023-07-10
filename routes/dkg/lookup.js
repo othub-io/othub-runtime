@@ -2,7 +2,7 @@ require('dotenv').config()
 var express = require('express')
 var router = express.Router()
 const purl = require('url')
-const queryTypes = require('../public/util/queryTypes')
+const queryTypes = require('../../public/util/queryTypes')
 
 const DKGClient = require('dkg.js')
 const OT_NODE_HOSTNAME = process.env.OT_NODE_HOSTNAME
