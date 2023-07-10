@@ -5,8 +5,8 @@ const purl = require('url')
 const mysql = require('mysql')
 const otnodedb_connection = mysql.createConnection({
   host: process.env.DBHOST,
-  user: process.env.USER,
-  password: process.env.PASSWORD,
+  user: process.env.DBUSER,
+  password: process.env.DBPASSWORD,
   database: process.env.OTHUB_DB,
   port: '3306',
   insecureAuth: true

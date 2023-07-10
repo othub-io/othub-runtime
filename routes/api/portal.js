@@ -1,9 +1,6 @@
 require('dotenv').config()
 var express = require('express')
 var router = express.Router()
-const girraph_db = require('better-sqlite3')(`public/database/girraph.db`, {
-  verbose: console.log
-})
 const purl = require('url')
 
 /* GET explore page. */
