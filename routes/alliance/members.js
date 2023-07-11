@@ -114,7 +114,7 @@ router.get('/', async function (req, res, next) {
       console.error('Error retrieving data:', error)
     })
 
-  query = `select * from v_nodes_stats where date = (select block_date from txs_staging order by block_date desc limit 1)and nodeGroup = ?`
+  query = `select * from v_nodes_stats_latest where nodeGroup=? and nodeStake >= 50000`
   params = ['Alliance']
   allianceNodes = await getOTPData(query, params)
     .then(results => {
