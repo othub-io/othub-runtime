@@ -131,7 +131,7 @@ router.get('/', async function (req, res, next) {
   for (i = 0; i < allianceNodes.length; ++i) {
     node = allianceNodes[i]
 
-    totalAsk = totalAsk + Number(node.ask)
+    totalAsk = totalAsk + Number(node.nodeAsk)
     totalStake = totalStake + Number(node.nodeStake)
   }
 
