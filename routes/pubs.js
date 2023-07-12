@@ -40,7 +40,6 @@ router.get('/', async function (req, res, next) {
   }
 
   url_params = purl.parse(req.url, true).query
-  orderby = url_params.orderby
 
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE')
@@ -49,9 +48,10 @@ router.get('/', async function (req, res, next) {
     'Origin, X-Requested-With, Content-Type, Accept'
   )
 
-  query = `select * from v_nodes where nodeStake >= 50000 order by ? desc`
-  params = [orderby]
-  v_nodes = await getOTPData(query, params)
+  limit = 10000
+  query = `select * from v_pubs order by block_date desc limit ?`
+  params = [limit]
+  v_pubs = await getOTPData(query, params)
     .then(results => {
       //console.log('Query results:', results);
       return results
@@ -62,7 +62,7 @@ router.get('/', async function (req, res, next) {
     })
 
   res.json({
-    v_nodes: v_nodes,
+    v_pubs: v_pubs,
     msg: ``
   })
 })
