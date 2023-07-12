@@ -6,10 +6,11 @@ const cookieParser = require('cookie-parser')
 const logger = require('morgan')
 
 const homeRouter = require('./routes/home')
+const pubsRouter = require('./routes/pubs')
 const nodesRouter = require('./routes/nodes')
 
 //dkg
-//const lookupRouter = require('./routes/lookup')
+const getRouter = require('./routes/dkg/get')
 //const publishRouter = require('./routes/publish')
 //const searchRouter = require('./routes/search')
 
@@ -37,13 +38,14 @@ app.use(express.static(path.join(__dirname, 'node_modules')))
 app.use('/dkg', express.static(__dirname + 'node_modules/dkg.js'))
 
 app.use('/home', homeRouter)
+app.use('/pubs', pubsRouter)
 app.use('/nodes', nodesRouter)
 
 //api
 app.use('/api/keys', apiKeysRouter)
 
 //dkg
-//app.use('/lookup', lookupRouter)
+app.use('/get', getRouter)
 //app.use('/publish', publishRouter)
 //app.use('/search', searchRouter)
 

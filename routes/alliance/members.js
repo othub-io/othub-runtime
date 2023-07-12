@@ -101,10 +101,10 @@ router.get('/', async function (req, res, next) {
     )
   }
 
-  query = `select * from otnodedb.node_operators
+  query = `select * from node_operators
   where nodeGroup= ?`
   params = ['Alliance']
-  allianceOperators = await getOTPData(query, params)
+  allianceOperators = await getOTHubData(query, params)
     .then(results => {
       //console.log('Query results:', results);
       return results
