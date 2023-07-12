@@ -73,7 +73,7 @@ router.get('/', async function (req, res, next) {
       console.error('Error retrieving data:', error)
     })
 
-    query = `select * from v_pubs_stats`
+    query = `select * from v_pubs_stats order by date asc`
     params = []
     v_pubs_stats = await getOTPData(query, params)
       .then(results => {
