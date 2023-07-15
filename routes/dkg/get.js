@@ -27,18 +27,35 @@ const mainnet_dkg = new DKGClient(mainnet_node_options)
 
 /* GET explore page. */
 router.get('/', async function (req, res, next) {
+  console.log('herhehrehre')
   ip = req.socket.remoteAddress
   if (process.env.SSL_KEY_PATH) {
     ip = req.headers['x-forwarded-for']
   }
   console.log(`Visitor:${ip} looked up a UAL.`)
 
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE')
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept'
+  )
+
   url_params = purl.parse(req.url, true).query
   ual = url_params.ual
   chain = url_params.chain
 
+  console.log(chain)
+  blockchain = "otp::mainnet"
+  dkg = mainnet_dkg
+  if(chain === "Origintrail Parachain Testnet"){
+    blockchain = "otp::testnet"
+    dkg = testnet_dkg
+  }
+
+  console.log('2')
+
   if (!ual) {
-    console.log(`Visitor:${ip} landed on the lookup page.`)
     res.json({
       payload_data: 'No UAL'
     })
@@ -62,6 +79,7 @@ router.get('/', async function (req, res, next) {
   // }
 
   console.log('UAL: ' + ual)
+  console.log('CHAIN: ' + blockchain)
   dkg_get_result = await dkg.asset
     .get(ual, {
       validate: true,
@@ -70,7 +88,7 @@ router.get('/', async function (req, res, next) {
       state: 'LATEST_FINALIZED',
       contentType: 'all',
       blockchain: {
-        name: 'otp::testnet',
+        name: blockchain,
         publicKey: process.env.PUBLIC_KEY,
         privateKey: process.env.PRIVATE_KEY
       }
@@ -88,10 +106,6 @@ router.get('/', async function (req, res, next) {
     })
     return
   }
-
-  timestamp = new Date()
-  abs_timestamp = Math.abs(timestamp)
-
 
   console.log(dkg_get_result)
   res.json({
