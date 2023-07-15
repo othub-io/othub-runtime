@@ -59,8 +59,15 @@ router.get('/', async function (req, res, next) {
 
   if (url_params.nodeId && Number(url_params.nodeId)) {
     nodeId = Number(url_params.nodeId)
-    nodeId = `%${nodeId}%`
-    conditions.push(`winners like ?`)
+    conditions.push(`winners like ? OR winners like ? OR winners like ?`)
+
+    nodeId = `%"${nodeId},%`
+    params.push(nodeId)
+
+    nodeId = `%,${nodeId},%`
+    params.push(nodeId)
+
+    nodeId = `%,${nodeId}"%`
     params.push(nodeId)
   }
   
