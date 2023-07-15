@@ -15,7 +15,7 @@ const getRouter = require('./routes/dkg/get')
 //const searchRouter = require('./routes/search')
 
 //mynodes
-const mynodesSettingsRouter = require('./routes/myNodes/settings')
+const myNodesSettingsRouter = require('./routes/myNodes/settings')
 
 //alliance
 const allianceMembersRouter = require('./routes/alliance/members')
@@ -45,12 +45,12 @@ app.use('/nodes', nodesRouter)
 app.use('/api/keys', apiKeysRouter)
 
 //dkg
-app.use('/get', getRouter)
+app.use('/dkg/get', getRouter)
 //app.use('/publish', publishRouter)
 //app.use('/search', searchRouter)
 
 //mynodes
-app.use('/myNodes/settings', mynodesSettingsRouter)
+app.use('/myNodes/settings', myNodesSettingsRouter)
 
 //alliance
 app.use('/alliance/members', allianceMembersRouter)

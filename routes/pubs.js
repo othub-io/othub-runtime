@@ -48,10 +48,43 @@ router.get('/', async function (req, res, next) {
     'Origin, X-Requested-With, Content-Type, Accept'
   )
 
+  query = `select * from v_pubs`
+  conditions = []
+  params = []
+
   limit = 10000
-  query = `select * from v_pubs order by block_date desc limit ?`
-  params = [limit]
-  v_pubs = await getOTPData(query, params)
+  if (url_params.limit && Number(url_params.limit)) {
+    limit = url_params.limit
+  }
+
+  if (url_params.nodeId && Number(url_params.nodeId)) {
+    nodeId = Number(url_params.nodeId)
+    nodeId = `%${nodeId}%`
+    conditions.push(`winners like ?`)
+    params.push(nodeId)
+  }
+  
+  if (url_params.publisher) {
+    conditions.push(`publisher = ?`)
+    params.push(url_params.publisher)
+  }
+
+  order_by = 'block_ts_hour'
+  if (url_params.order) {
+    order_by = url_params.order
+  }
+
+  if (url_params.ual) {
+    conditions.push(`ual = ?`)
+    params.push(url_params.ual)
+  }
+
+  whereClause = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : ''
+  sqlQuery = query + ' ' + whereClause + ` order by ${order_by} desc LIMIT ${limit}`
+
+  v_pubs = ''
+  console.log(sqlQuery)
+  v_pubs = await getOTPData(sqlQuery, params)
     .then(results => {
       //console.log('Query results:', results);
       return results
@@ -60,6 +93,10 @@ router.get('/', async function (req, res, next) {
     .catch(error => {
       console.error('Error retrieving data:', error)
     })
+
+    if (url_params.ual) {
+        console.log(v_pubs)
+    }
 
   res.json({
     v_pubs: v_pubs,
