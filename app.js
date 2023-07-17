@@ -50,7 +50,7 @@ app.use('/dkg/get', getRouter)
 //app.use('/search', searchRouter)
 
 //mynodes
-app.use('/myNodes/settings', myNodesSettingsRouter)
+app.use('/mynodes/settings', myNodesSettingsRouter)
 
 //alliance
 app.use('/alliance/members', allianceMembersRouter)
