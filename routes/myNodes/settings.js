@@ -257,7 +257,7 @@ echo -e "CHAT_ID="${operatorRecord[0].telegramID}" \nBOT_ID="${botToken}" \nNODE
 
     query =
       'INSERT INTO node_operators (adminKey,keccak256hash,nodeGroup) VALUES (?,?,?) ON DUPLICATE KEY UPDATE nodeGroup = ?'
-    await otnodedb_connection.query(
+    await othubdb_connection.query(
       query,
       [admin_key, keccak256hash, group, group],
       function (error, results, fields) {
