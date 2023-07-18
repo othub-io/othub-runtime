@@ -109,34 +109,13 @@ router.get('/', async function (req, res, next) {
     totalStake = totalStake + Number(node.nodeStake)
   }
 
-  function formatNumber (number) {
-    if (number >= 1000) {
-      const suffixes = ['', 'K', 'M', 'B', 'T']
-      const suffixIndex = Math.floor(Math.log10(number) / 3)
-      const shortNumber =
-        suffixIndex !== 0 ? number / Math.pow(1000, suffixIndex) : number
-      const roundedNumber = Math.round(shortNumber * 10) / 10
-      return (
-        roundedNumber.toString().replace(/\.0$/, '') + suffixes[suffixIndex]
-      )
-    }
-    return number.toString()
-  }
-
-  console.log(v_pubs_stats_24h[0])
-  pub_count = await formatNumber(parseFloat(pub_count[0].count))
-  tracSpent_24h = await formatNumber(parseFloat(Number(v_pubs_stats_24h[0].totalTracSpent).toFixed(2)))
-  totalPubs_24h = await formatNumber(parseFloat(v_pubs_stats_24h[0].totalPubs))
-  tracSpent = await formatNumber(parseFloat(tracSpent))
-  totalStake = await formatNumber(parseFloat(totalStake))
-
   res.json({
     v_nodes: v_nodes,
     v_pubs_stats: v_pubs_stats,
-    pub_count: pub_count,
-    tracSpent: tracSpent,
-    totalPubs_24h: totalPubs_24h,
-    tracSpent_24h: tracSpent_24h,
+    pub_count: pub_count[0].count,
+    tracSpent_24h: v_pubs_stats_24h[0].totalTracSpent,
+    totalPubs: v_pubs_stats_24h[0].totalPubs,
+    totalTracSpent: tracSpent,
     totalStake: totalStake,
     msg: ``
   })
