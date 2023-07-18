@@ -85,18 +85,6 @@ router.get('/', async function (req, res, next) {
         console.error('Error retrieving data:', error)
       })
 
-      query = `select * from v_pubs_stats order by totalPubs desc limit 1`
-      params = []
-      max_pubs = await getOTPData(query, params)
-        .then(results => {
-          //console.log('Query results:', results);
-          return results
-          // Use the results in your variable or perform further operations
-        })
-        .catch(error => {
-          console.error('Error retrieving data:', error)
-        })
-
     query = `select * from v_pubs_stats order by date desc limit 1`
     params = []
     v_pubs_stats_24h = await getOTPData(query, params)
