@@ -138,6 +138,7 @@ router.get('/', async function (req, res, next) {
     totalPubs_24h: totalPubs_24h,
     tracSpent_24h: tracSpent_24h,
     totalStake: totalStake,
+    max_pubs: max_pubs[0].totalPubs,
     msg: ``
   })
 })

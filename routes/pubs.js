@@ -52,7 +52,7 @@ router.get('/', async function (req, res, next) {
   conditions = []
   params = []
 
-  limit = 10000
+  limit = 100
   if (url_params.limit && Number(url_params.limit)) {
     limit = url_params.limit
   }
