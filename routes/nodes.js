@@ -49,7 +49,7 @@ router.get('/', async function (req, res, next) {
     'Origin, X-Requested-With, Content-Type, Accept'
   )
 
-  query = `select * from v_nodes where nodeStake >= 50000 order by ? desc`
+  query = `select * from v_nodes where nodeStake >= 50000 AND nodeId not in ('83','98') order by ? desc`
   params = [orderby]
   v_nodes = await getOTPData(query, params)
     .then(results => {
