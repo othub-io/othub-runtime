@@ -3,7 +3,7 @@ var express = require('express')
 var router = express.Router()
 const purl = require('url')
 const mysql = require('mysql')
-const otnodedb_connection = mysql.createConnection({
+const othubdb_connection = mysql.createConnection({
   host: process.env.DBHOST,
   user: process.env.DBUSER,
   password: process.env.DBPASSWORD,
@@ -14,7 +14,7 @@ const otnodedb_connection = mysql.createConnection({
 
 function executeQuery (query, params) {
   return new Promise((resolve, reject) => {
-    otnodedb_connection.query(query, params, (error, results) => {
+    othubdb_connection.query(query, params, (error, results) => {
       if (error) {
         reject(error)
       } else {
@@ -69,7 +69,7 @@ router.get('/', async function (req, res, next) {
 
   if (deleteKey) {
     query = 'DELETE FROM user_header WHERE api_key = ?'
-    await otnodedb_connection.query(
+    await othubdb_connection.query(
       query,
       [deleteKey],
       function (error, results, fields) {
@@ -98,7 +98,6 @@ router.get('/', async function (req, res, next) {
   }
 
   if (app_name) {
-    member = 'no'
     access = 'Basic'
 
     query = `SELECT * FROM user_header WHERE admin_key = ?`
@@ -115,38 +114,12 @@ router.get('/', async function (req, res, next) {
 
     console.log(userRecords)
 
-    query = `SELECT * FROM node_operators WHERE adminKey = ? AND nodeGroup =?`
-    params = [admin_key, 'Alliance']
-    allianceMember = await getData(query, params)
-      .then(results => {
-        //console.log('Query results:', results);
-        return results
-        // Use the results in your variable or perform further operations
-      })
-      .catch(error => {
-        console.error('Error retrieving data:', error)
-      })
-
-    if (allianceMember != '') {
-      member = 'yes'
-      access = 'Premium'
-    }
-
     if (userRecords != '') {
-      if (member == 'no' && userRecords.length >= 1) {
+      if (userRecords.length >= 1) {
         res.json({
           userRecords: userRecords,
           admin_key: admin_key,
           msg: `FAIL! You may only have 1 api key at a time.`
-        })
-        return
-      }
-
-      if (member == 'yes' && userRecords.length >= 2) {
-        res.json({
-          userRecords: userRecords,
-          admin_key: admin_key,
-          msg: `FAIL! You may only have 2 api keys at a time.`
         })
         return
       }
@@ -155,7 +128,7 @@ router.get('/', async function (req, res, next) {
     api_key = await randomWord(Math.floor(25) + 5)
 
     query = `INSERT INTO user_header SET api_key = ?, admin_key = ?, app_name = ?, access = ?`
-    await otnodedb_connection.query(
+    await othubdb_connection.query(
       query,
       [api_key, admin_key, app_name, access],
       function (error, results, fields) {
