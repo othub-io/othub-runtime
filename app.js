@@ -17,9 +17,6 @@ const getRouter = require('./routes/dkg/get')
 //mynodes
 const myNodesSettingsRouter = require('./routes/myNodes/settings')
 
-//alliance
-const allianceMembersRouter = require('./routes/alliance/members')
-
 //api
 const apiKeysRouter = require('./routes/api/keys')
 
@@ -52,10 +49,7 @@ app.use('/dkg/get', getRouter)
 //mynodes
 app.use('/mynodes/settings', myNodesSettingsRouter)
 
-//alliance
-app.use('/alliance/members', allianceMembersRouter)
-//app.use('/alliance/dashboard', allianceDashboardRouter)
-//app.use('/alliance/vote', voteRouter)
+//app.use('/vote', voteRouter)
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
