@@ -73,7 +73,7 @@ router.get('/', async function (req, res, next) {
       console.error('Error retrieving data:', error)
     })
 
-    query = `select * from v_pubs_stats order by date asc`
+    query = `select * from v_pubs_stats`
     params = []
     v_pubs_stats = await getOTPData(query, params)
       .then(results => {
@@ -85,9 +85,9 @@ router.get('/', async function (req, res, next) {
         console.error('Error retrieving data:', error)
       })
 
-    query = `select * from v_pubs_stats order by date desc limit 1`
+    query = `select * from v_pubs_stats_last24h`
     params = []
-    v_pubs_stats_24h = await getOTPData(query, params)
+    v_pubs_stats_last24h = await getOTPData(query, params)
       .then(results => {
         //console.log('Query results:', results);
         return results
@@ -97,10 +97,10 @@ router.get('/', async function (req, res, next) {
         console.error('Error retrieving data:', error)
       })
 
-  tracSpent = 0
+  totalTracSpent = 0
   for(i = 0; i < v_pubs_stats.length; i++){
     pub = v_pubs_stats[i]
-    tracSpent = tracSpent + Number(pub.totalTracSpent)
+    totalTracSpent = totalTracSpent + Number(pub.totalTracSpent)
   }
 
   totalStake = 0
@@ -110,12 +110,11 @@ router.get('/', async function (req, res, next) {
   }
 
   res.json({
-    v_nodes: v_nodes,
+    v_nodes_length: v_nodes.length,
     v_pubs_stats: v_pubs_stats,
+    v_pubs_stats_last24h: v_pubs_stats_last24h,
     pub_count: pub_count[0].count,
-    tracSpent_24h: v_pubs_stats_24h[0].totalTracSpent,
-    totalPubs: v_pubs_stats_24h[0].totalPubs,
-    totalTracSpent: tracSpent,
+    totalTracSpent: totalTracSpent,
     totalStake: totalStake,
     msg: ``
   })
