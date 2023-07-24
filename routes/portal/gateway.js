@@ -59,13 +59,13 @@ router.get('/', async function (req, res, next) {
     }
 
     if (url_params.account) {
-        conditions.push(`admin_key = ?`)
+        conditions.push(`public_address = ?`)
         params.push(url_params.account)
     }
     
-    if (url_params.app_group) {
-        conditions.push(`app_group = ?`)
-        params.push(url_params.app_group)
+    if (url_params.app_name) {
+        conditions.push(`app_name = ?`)
+        params.push(url_params.app_name)
     }
 
     if (url_params.ual) {
