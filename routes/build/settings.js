@@ -65,7 +65,7 @@ router.get('/', async function (req, res, next) {
   app_name = url_params.app_name
   deleteKey = url_params.deleteKey
 
-  console.log(`Visitor:${ip} the api page.`)
+  console.log(`Visitor:${ip} the dev settings page.`)
 
   if (deleteKey) {
     query = 'DELETE FROM user_header WHERE api_key = ?'

@@ -6,19 +6,22 @@ const cookieParser = require('cookie-parser')
 const logger = require('morgan')
 
 const homeRouter = require('./routes/home')
-const pubsRouter = require('./routes/pubs')
 const nodesRouter = require('./routes/nodes')
 
 //dkg
-const getRouter = require('./routes/dkg/get')
+//const getRouter = require('./routes/dkg/get')
 //const publishRouter = require('./routes/publish')
 //const searchRouter = require('./routes/search')
 
-//mynodes
-const myNodesSettingsRouter = require('./routes/myNodes/settings')
+//portal
+const portalAssetsRouter = require('./routes/portal/assets')
+const portalGatewayRouter = require('./routes/portal/gateway')
 
-//api
-const apiKeysRouter = require('./routes/api/keys')
+//staking
+const stakingSettingsRouter = require('./routes/staking/settings')
+
+//build
+const buildSettingsRouter = require('./routes/build/settings')
 
 //const allianceRegisterRouter = require('./routes/alliance/register')
 //const allianceDashboardRouter = require('./routes/alliance/dashboard')
@@ -35,19 +38,22 @@ app.use(express.static(path.join(__dirname, 'node_modules')))
 app.use('/dkg', express.static(__dirname + 'node_modules/dkg.js'))
 
 app.use('/home', homeRouter)
-app.use('/pubs', pubsRouter)
 app.use('/nodes', nodesRouter)
 
-//api
-app.use('/api/keys', apiKeysRouter)
+//build
+app.use('/build/settings', buildSettingsRouter)
+
+//portal
+app.use('/portal/assets', portalAssetsRouter)
+app.use('/portal/gateway', portalGatewayRouter)
 
 //dkg
-app.use('/dkg/get', getRouter)
+//app.use('/dkg/get', getRouter)
 //app.use('/publish', publishRouter)
 //app.use('/search', searchRouter)
 
-//mynodes
-app.use('/mynodes/settings', myNodesSettingsRouter)
+//staking
+app.use('/staking/settings', stakingSettingsRouter)
 
 //app.use('/vote', voteRouter)
 
