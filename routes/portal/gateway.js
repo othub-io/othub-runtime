@@ -60,6 +60,35 @@ router.get("/", async function (req, res, next) {
       );
     }
 
+    if(url_params.enable_apps){
+      console.log(url_params.enable_apps)
+      query =
+      'DELETE FROM enabled_apps WHERE public_address = ?'
+        await othubdb_connection.query(
+          query,
+          [url_params.account],
+          function (error, results, fields) {
+            if (error) throw error
+          }
+        )
+
+      apps = []
+      enable_apps = JSON.parse(url_params.enable_apps)
+      for (let i =0;i < enable_apps.length; i++) {
+        if(Object.keys(enable_apps[i]).filter((key) => enable_apps[key] === true)){
+          query =
+        'INSERT INTO enabled_apps (public_address,app_name) VALUES (?,?)'
+          await othubdb_connection.query(
+            query,
+            [url_params.account, enable_apps[i].app_name],
+            function (error, results, fields) {
+              if (error) throw error
+            }
+          )
+        }
+      }
+    }
+
     query = `select * from txn_header`;
     conditions = [];
     params = [];
@@ -74,11 +103,12 @@ router.get("/", async function (req, res, next) {
       params.push(url_params.account);
     }
 
-    conditions.push(`network = ?`);
     if (url_params.network == "Origintrail Parachain Testnet") {
+      conditions.push(`network = ?`);
       params.push("otp::testnet");
     }
     if (url_params.network == "Origintrail Parachain Mainnet") {
+      conditions.push(`network = ?`);
       params.push("otp::mainnet");
     }
 
@@ -196,9 +226,35 @@ router.get("/", async function (req, res, next) {
         console.error("Error retrieving data:", error);
       });
 
+      sqlQuery = 'select * from enabled_apps where public_address = ?'
+      params = [url_params.account]
+      enabled_apps = await getOTHubData(sqlQuery, params)
+      .then((results) => {
+        //console.log('Query results:', results);
+        return results;
+        // Use the results in your variable or perform further operations
+      })
+      .catch((error) => {
+        console.error("Error retrieving data:", error);
+      });
+
+      sqlQuery = 'select app_name from user_header'
+      params = []
+      all_apps = await getOTHubData(sqlQuery, params)
+      .then((results) => {
+        //console.log('Query results:', results);
+        return results;
+        // Use the results in your variable or perform further operations
+      })
+      .catch((error) => {
+        console.error("Error retrieving data:", error);
+      });
+
     res.json({
       raw_txn_header: raw_txn_header,
       txn_header: txn_header,
+      enabled_apps: enabled_apps,
+      all_apps: all_apps,
       msg: ``,
     });
   } catch (e) {
