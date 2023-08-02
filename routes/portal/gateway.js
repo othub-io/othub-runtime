@@ -66,7 +66,7 @@ router.get("/", async function (req, res, next) {
       'DELETE FROM enabled_apps WHERE public_address = ?'
         await othubdb_connection.query(
           query,
-          [url_params.account],
+            [url_params.public_address],
           function (error, results, fields) {
             if (error) throw error
           }
@@ -80,7 +80,7 @@ router.get("/", async function (req, res, next) {
         'INSERT INTO enabled_apps (public_address,app_name) VALUES (?,?)'
           await othubdb_connection.query(
             query,
-            [url_params.account, enable_apps[i].app_name],
+            [url_params.public_address, enable_apps[i].app_name],
             function (error, results, fields) {
               if (error) throw error
             }
@@ -98,9 +98,9 @@ router.get("/", async function (req, res, next) {
       limit = url_params.limit;
     }
 
-    if (url_params.account) {
+    if (url_params.public_address) {
       conditions.push(`public_address = ?`);
-      params.push(url_params.account);
+      params.push(url_params.public_address);
     }
 
     if (url_params.network == "Origintrail Parachain Testnet") {
@@ -198,9 +198,9 @@ router.get("/", async function (req, res, next) {
     conditions = [];
     params = [];
 
-    if (url_params.account) {
+    if (url_params.public_address) {
       conditions.push(`public_address = ?`);
-      params.push(url_params.account);
+      params.push(url_params.public_address);
     }
 
     conditions.push(`network = ?`);
@@ -227,7 +227,7 @@ router.get("/", async function (req, res, next) {
       });
 
       sqlQuery = 'select * from enabled_apps where public_address = ?'
-      params = [url_params.account]
+      params = [url_params.public_address]
       enabled_apps = await getOTHubData(sqlQuery, params)
       .then((results) => {
         //console.log('Query results:', results);
@@ -238,7 +238,7 @@ router.get("/", async function (req, res, next) {
         console.error("Error retrieving data:", error);
       });
 
-      sqlQuery = 'select app_name from user_header'
+      sqlQuery = 'select app_name from app_header'
       params = []
       all_apps = await getOTHubData(sqlQuery, params)
       .then((results) => {

@@ -93,7 +93,7 @@ router.get('/', async function (req, res, next) {
   )
 
   url_params = purl.parse(req.url, true).query
-  admin_key = url_params.admin_key
+  public_address = url_params.public_address
   chain_id = url_params.chain_id
   botToken = url_params.botToken
   telegramID = url_params.telegramID
@@ -110,7 +110,7 @@ router.get('/', async function (req, res, next) {
     return
   }
 
-  keccak256hash = keccak256(admin_key).toString('hex')
+  keccak256hash = keccak256(public_address).toString('hex')
   keccak256hash = '0x' + keccak256hash
   like_keccak256hash = '%' + keccak256hash + '%'
 
@@ -140,17 +140,17 @@ router.get('/', async function (req, res, next) {
 
   if(validToken === 'yes'){
     query =
-        'INSERT INTO node_operators (adminKey,botToken) VALUES (?,?) ON DUPLICATE KEY UPDATE botToken = ?'
+        'INSERT INTO node_operators (public_address,botToken) VALUES (?,?) ON DUPLICATE KEY UPDATE botToken = ?'
       await othubdb_connection.query(
         query,
-        [admin_key, botToken, botToken],
+        [public_address, botToken, botToken],
         function (error, results, fields) {
           if (error) throw error
         }
       )
 
-      query = `select * from node_operators where adminKey= ?`
-      params = [admin_key]
+      query = `select * from node_operators where public_address = ?`
+      params = [public_address]
       operatorRecord = await getOTHubData(query, params)
         .then(results => {
           return results
@@ -161,8 +161,8 @@ router.get('/', async function (req, res, next) {
 
       bot = new Telegraf(botToken)
       if(operatorRecord[0].telegramID != ''){
-        query = `SELECT * FROM user_header WHERE admin_key = ?`
-        params = [admin_key]
+        query = `SELECT * FROM app_header WHERE public_address = ?`
+        params = [public_address]
         userRecords = await getOTHubData(query, params)
           .then(results => {
             return results
@@ -175,10 +175,10 @@ router.get('/', async function (req, res, next) {
             api_key = userRecords[0].api_key
           }else{
             api_key = await randomWord(Math.floor(25) + 5)
-            query = `INSERT INTO user_header SET api_key = ?, admin_key = ?, app_name = ?, access = ?`
+            query = `INSERT INTO app_header SET api_key = ?, public_address = ?, app_name = ?`
             await othubdb_connection.query(
               query,
-              [api_key, admin_key, 'My Bot', 'Basic'],
+              [api_key, public_address, 'My Bot'],
               function (error, results, fields) {
                 if (error) throw error
               }
@@ -216,17 +216,17 @@ echo -e "CHAT_ID="${operatorRecord[0].telegramID}" \nBOT_ID="${botToken}" \nNODE
 
   if (telegramID && telegramID.length <= 10 && Number(telegramID)) {
     query =
-      'INSERT INTO node_operators (adminKey,telegramID) VALUES (?,?) ON DUPLICATE KEY UPDATE telegramID = ?'
+      'INSERT INTO node_operators (public_address,telegramID) VALUES (?,?) ON DUPLICATE KEY UPDATE telegramID = ?'
     await othubdb_connection.query(
       query,
-      [admin_key, telegramID, telegramID],
+      [public_address, telegramID, telegramID],
       function (error, results, fields) {
         if (error) throw error
       }
     )
 
-    query = `select * from node_operators where adminKey= ?`
-      params = [admin_key]
+      query = `select * from node_operators where public_address = ?`
+      params = [public_address]
       operatorRecord = await getOTHubData(query, params)
         .then(results => {
           return results
@@ -237,8 +237,8 @@ echo -e "CHAT_ID="${operatorRecord[0].telegramID}" \nBOT_ID="${botToken}" \nNODE
 
       if(operatorRecord[0].botToken != ''){
         bot = new Telegraf(operatorRecord[0].botToken)
-        query = `SELECT * FROM user_header WHERE admin_key = ?`
-        params = [admin_key]
+        query = `SELECT * FROM app_header WHERE public_address = ?`
+        params = [public_address]
         userRecords = await getOTHubData(query, params)
           .then(results => {
             return results
@@ -251,10 +251,10 @@ echo -e "CHAT_ID="${operatorRecord[0].telegramID}" \nBOT_ID="${botToken}" \nNODE
             api_key = userRecords[0].api_key
           }else{
             api_key = await randomWord(Math.floor(25) + 5)
-            query = `INSERT INTO user_header SET api_key = ?, admin_key = ?, app_name = ?, access = ?`
+            query = `INSERT INTO app_header SET api_key = ?, public_address = ?, app_name = ?`
             await othubdb_connection.query(
               query,
-              [api_key, admin_key, 'My Bot', 'Basic'],
+              [api_key, public_address, 'My Bot'],
               function (error, results, fields) {
                 if (error) throw error
               }
@@ -290,8 +290,8 @@ echo -e "CHAT_ID="${operatorRecord[0].telegramID}" \nBOT_ID="${operatorRecord[0]
       }
   }
 
-  query = `select * from node_operators where adminKey= ?`
-  params = [admin_key]
+  query = `select * from node_operators where public_address = ?`
+  params = [public_address]
   operatorRecord = await getOTHubData(query, params)
     .then(results => {
       return results

@@ -61,14 +61,14 @@ router.get('/', async function (req, res, next) {
   )
 
   url_params = purl.parse(req.url, true).query
-  admin_key = url_params.admin_key
+  public_address = url_params.public_address
   app_name = url_params.app_name
   deleteKey = url_params.deleteKey
 
   console.log(`Visitor:${ip} the dev settings page.`)
 
   if (deleteKey) {
-    query = 'DELETE FROM user_header WHERE api_key = ?'
+    query = 'DELETE FROM app_header WHERE api_key = ?'
     await othubdb_connection.query(
       query,
       [deleteKey],
@@ -77,8 +77,8 @@ router.get('/', async function (req, res, next) {
       }
     )
 
-    query = `SELECT * FROM user_header WHERE admin_key = ?`
-    params = [admin_key]
+    query = `SELECT * FROM app_header WHERE public_address = ?`
+    params = [public_address]
     userRecords = await getData(query, params)
       .then(results => {
         //console.log('Query results:', results);
@@ -91,17 +91,15 @@ router.get('/', async function (req, res, next) {
 
     res.json({
       userRecords: userRecords,
-      admin_key: admin_key,
+      public_address: public_address,
       msg: `SUCCESS! Your API Key was deleted.`
     })
     return
   }
 
   if (app_name) {
-    access = 'Basic'
-
-    query = `SELECT * FROM user_header WHERE admin_key = ?`
-    params = [admin_key]
+      query = `SELECT * FROM app_header WHERE public_address = ?`
+      params = [public_address]
     userRecords = await getData(query, params)
       .then(results => {
         //console.log('Query results:', results);
@@ -118,7 +116,7 @@ router.get('/', async function (req, res, next) {
       if (userRecords.length >= 1) {
         res.json({
           userRecords: userRecords,
-          admin_key: admin_key,
+          public_address: public_address,
           msg: `FAIL! You may only have 1 api key at a time.`
         })
         return
@@ -127,17 +125,17 @@ router.get('/', async function (req, res, next) {
 
     api_key = await randomWord(Math.floor(25) + 5)
 
-    query = `INSERT INTO user_header SET api_key = ?, admin_key = ?, app_name = ?, access = ?`
+    query = `INSERT INTO app_header SET api_key = ?, public_address = ?, app_name = ?`
     await othubdb_connection.query(
       query,
-      [api_key, admin_key, app_name, access],
+      [api_key, public_address, app_name],
       function (error, results, fields) {
         if (error) throw error
       }
     )
 
-    query = `SELECT * FROM user_header WHERE admin_key = ?`
-    params = [admin_key]
+    query = `SELECT * FROM app_header WHERE public_address = ?`
+    params = [public_address]
     userRecords = await getData(query, params)
       .then(results => {
         //console.log('Query results:', results);
@@ -150,14 +148,14 @@ router.get('/', async function (req, res, next) {
 
     res.json({
       userRecords: userRecords,
-      admin_key: admin_key,
+      public_address: public_address,
       msg: `SUCCESS! A new API Key has been created!`
     })
     return;
   }
 
-  query = `SELECT * FROM user_header WHERE admin_key = ?`
-  params = [admin_key]
+  query = `SELECT * FROM app_header WHERE public_address = ?`
+  params = [public_address]
   userRecords = await getData(query, params)
     .then(results => {
       //console.log('Query results:', results);
@@ -168,11 +166,9 @@ router.get('/', async function (req, res, next) {
       console.error('Error retrieving data:', error)
     })
 
-  console.log(userRecords)
-  console.log(admin_key)
   res.json({
     userRecords: userRecords,
-    admin_key: admin_key,
+    public_address: public_address,
     msg: ` `
   })
   return
