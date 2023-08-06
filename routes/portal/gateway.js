@@ -61,7 +61,7 @@ router.get("/", async function (req, res, next) {
     }
 
     if(url_params.enable_apps){
-      console.log(url_params.enable_apps)
+      console.log('ENABLED APPS REQUESTED '+url_params.enable_apps)
       query =
       'DELETE FROM enabled_apps WHERE public_address = ?'
         await othubdb_connection.query(
@@ -74,13 +74,12 @@ router.get("/", async function (req, res, next) {
 
       apps = []
       enable_apps = JSON.parse(url_params.enable_apps)
+      keys = Object.keys(enable_apps);
       for (let i =0;i < enable_apps.length; i++) {
-        if(Object.keys(enable_apps[i]).filter((key) => enable_apps[key] === true)){
+          if (Object.keys(enable_apps[i]).filter((key) => enable_apps[key] === true)) {
           query =
         'INSERT INTO enabled_apps (public_address,app_name) VALUES (?,?)'
-          await othubdb_connection.query(
-            query,
-            [url_params.public_address, enable_apps[i].app_name],
+              await othubdb_connection.query(query,[url_params.public_address, keys[i]],
             function (error, results, fields) {
               if (error) throw error
             }
@@ -237,6 +236,8 @@ router.get("/", async function (req, res, next) {
       .catch((error) => {
         console.error("Error retrieving data:", error);
       });
+
+      console.log('ENABLED APPS AFTER: ' + JSON.stringify(enabled_apps))
 
       sqlQuery = 'select app_name from app_header'
       params = []
