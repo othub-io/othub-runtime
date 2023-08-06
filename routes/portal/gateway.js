@@ -60,30 +60,32 @@ router.get("/", async function (req, res, next) {
       );
     }
 
-    if(url_params.enable_apps){
-      console.log('ENABLED APPS REQUESTED '+url_params.enable_apps)
-      query =
-      'DELETE FROM enabled_apps WHERE public_address = ?'
-        await othubdb_connection.query(
-          query,
-            [url_params.public_address],
-          function (error, results, fields) {
-            if (error) throw error
-          }
-        )
+    if (url_params.enable_apps) {
+      console.log(url_params.enable_apps);
+      query = "DELETE FROM enabled_apps WHERE public_address = ?";
+      await othubdb_connection.query(
+        query,
+        [url_params.account],
+        function (error, results, fields) {
+          if (error) throw error;
+        }
+      );
 
-      apps = []
-      enable_apps = JSON.parse(url_params.enable_apps)
-      keys = Object.keys(enable_apps);
-      for (let i =0;i < enable_apps.length; i++) {
-          if (Object.keys(enable_apps[i]).filter((key) => enable_apps[key] === true)) {
+      enable_apps = JSON.parse(url_params.enable_apps);
+      for (const key in enable_apps) {
+        const value = enable_apps[key];
+        console.log(key);
+        console.log(value);
+        if (value === true) {
           query =
-        'INSERT INTO enabled_apps (public_address,app_name) VALUES (?,?)'
-              await othubdb_connection.query(query,[url_params.public_address, keys[i]],
+            "INSERT INTO enabled_apps (public_address,app_name) VALUES (?,?)";
+          await othubdb_connection.query(
+            query,
+            [url_params.account, key],
             function (error, results, fields) {
-              if (error) throw error
+              if (error) throw error;
             }
-          )
+          );
         }
       }
     }
@@ -97,9 +99,9 @@ router.get("/", async function (req, res, next) {
       limit = url_params.limit;
     }
 
-    if (url_params.public_address) {
+    if (url_params.account) {
       conditions.push(`public_address = ?`);
-      params.push(url_params.public_address);
+      params.push(url_params.account);
     }
 
     if (url_params.network == "Origintrail Parachain Testnet") {
@@ -197,9 +199,9 @@ router.get("/", async function (req, res, next) {
     conditions = [];
     params = [];
 
-    if (url_params.public_address) {
+    if (url_params.account) {
       conditions.push(`public_address = ?`);
-      params.push(url_params.public_address);
+      params.push(url_params.account);
     }
 
     conditions.push(`network = ?`);
@@ -225,9 +227,9 @@ router.get("/", async function (req, res, next) {
         console.error("Error retrieving data:", error);
       });
 
-      sqlQuery = 'select * from enabled_apps where public_address = ?'
-      params = [url_params.public_address]
-      enabled_apps = await getOTHubData(sqlQuery, params)
+    sqlQuery = "select app_name from enabled_apps where public_address = ?";
+    params = [url_params.account];
+    enabled_apps = await getOTHubData(sqlQuery, params)
       .then((results) => {
         //console.log('Query results:', results);
         return results;
@@ -237,11 +239,9 @@ router.get("/", async function (req, res, next) {
         console.error("Error retrieving data:", error);
       });
 
-      console.log('ENABLED APPS AFTER: ' + JSON.stringify(enabled_apps))
-
-      sqlQuery = 'select app_name from app_header'
-      params = []
-      all_apps = await getOTHubData(sqlQuery, params)
+    sqlQuery = "select app_name from app_header";
+    params = [];
+    all_apps = await getOTHubData(sqlQuery, params)
       .then((results) => {
         //console.log('Query results:', results);
         return results;
@@ -250,12 +250,28 @@ router.get("/", async function (req, res, next) {
       .catch((error) => {
         console.error("Error retrieving data:", error);
       });
+
+    apps_enabled = [];
+    for (let i = 0; i < all_apps.length; i++) {
+      let app_name = all_apps[i].app_name;
+      let app_obj = {
+        app_name: app_name,
+        checked: false,
+      };
+
+      apps_enabled.push(app_obj);
+    }
+
+    for (let i = 0; i < apps_enabled.length; i++) {
+      if(enabled_apps.some((obj) => obj.app_name === apps_enabled[i].app_name)){
+        apps_enabled[i].checked = true;
+      }
+    }
 
     res.json({
       raw_txn_header: raw_txn_header,
       txn_header: txn_header,
-      enabled_apps: enabled_apps,
-      all_apps: all_apps,
+      apps_enabled: apps_enabled,
       msg: ``,
     });
   } catch (e) {
