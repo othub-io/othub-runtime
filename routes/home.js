@@ -73,7 +73,7 @@ router.get('/', async function (req, res, next) {
       console.error('Error retrieving data:', error)
     })
 
-    query = `select * from v_pubs_stats`
+    query = `select * from v_pubs_stats order by date`
     params = []
     v_pubs_stats = await getOTPData(query, params)
       .then(results => {
@@ -85,7 +85,7 @@ router.get('/', async function (req, res, next) {
         console.error('Error retrieving data:', error)
       })
 
-    query = `select * from v_pubs_stats_last24h`
+    query = `select * from v_pubs_stats_last24h order by datetime`
     params = []
     v_pubs_stats_last24h = await getOTPData(query, params)
       .then(results => {

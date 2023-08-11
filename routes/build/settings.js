@@ -125,10 +125,10 @@ router.get('/', async function (req, res, next) {
 
     api_key = await randomWord(Math.floor(25) + 5)
 
-    query = `INSERT INTO app_header SET api_key = ?, public_address = ?, app_name = ?`
+    query = `INSERT INTO app_header values (?,?,?,?)`
     await othubdb_connection.query(
       query,
-      [api_key, public_address, app_name],
+      [api_key, public_address, app_name, 'Basic'],
       function (error, results, fields) {
         if (error) throw error
       }
