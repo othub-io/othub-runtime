@@ -161,13 +161,13 @@ router.get("/", async function (req, res, next) {
 
     if (url_params.request == "ALL") {
       conditions.push(`request in (?,?,?)`);
-      params.push("Mint");
+      params.push("Create");
       params.push("Update");
       params.push("Transfer");
     }
 
     if (
-      url_params.request == "Mint" ||
+      url_params.request == "Create" ||
       url_params.request == "Update" ||
       url_params.request == "Transfer"
     ) {
@@ -239,7 +239,7 @@ router.get("/", async function (req, res, next) {
         console.error("Error retrieving data:", error);
       });
 
-    sqlQuery = "select app_name from app_header";
+    sqlQuery = "select DISTINCT app_name from app_header";
     params = [];
     all_apps = await getOTHubData(sqlQuery, params)
       .then((results) => {

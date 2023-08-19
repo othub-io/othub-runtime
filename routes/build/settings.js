@@ -1,177 +1,263 @@
-require('dotenv').config()
-var express = require('express')
-var router = express.Router()
-const purl = require('url')
-const mysql = require('mysql')
+require("dotenv").config();
+var express = require("express");
+var router = express.Router();
+const purl = require("url");
+const mysql = require("mysql");
 const othubdb_connection = mysql.createConnection({
   host: process.env.DBHOST,
   user: process.env.DBUSER,
   password: process.env.DBPASSWORD,
   database: process.env.OTHUB_DB,
-  port: '3306',
-  insecureAuth: true
-})
+  port: "3306",
+  insecureAuth: true,
+});
 
-function executeQuery (query, params) {
+function executeQuery(query, params) {
   return new Promise((resolve, reject) => {
     othubdb_connection.query(query, params, (error, results) => {
       if (error) {
-        reject(error)
+        reject(error);
       } else {
-        resolve(results)
+        resolve(results);
       }
-    })
-  })
+    });
+  });
 }
 
-async function getData (query, params) {
+async function getData(query, params) {
   try {
-    const results = await executeQuery(query, params)
-    return results
+    const results = await executeQuery(query, params);
+    return results;
   } catch (error) {
-    console.error('Error executing query:', error)
-    throw error
+    console.error("Error executing query:", error);
+    throw error;
   }
 }
 
-function randomWord (length) {
-  let result = ''
+function randomWord(length) {
+  let result = "";
   const characters =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-  const charactersLength = characters.length
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const charactersLength = characters.length;
 
   for (let i = 0; i < length; ++i) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength))
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
 
-  return result
+  return result;
 }
 
-router.get('/', async function (req, res, next) {
-  ip = req.socket.remoteAddress
+router.get("/", async function (req, res, next) {
+  ip = req.socket.remoteAddress;
   if (process.env.SSL_KEY_PATH) {
-    ip = req.headers['x-forwarded-for']
+    ip = req.headers["x-forwarded-for"];
   }
 
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE')
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
   res.setHeader(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept'
-  )
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
 
-  url_params = purl.parse(req.url, true).query
-  public_address = url_params.public_address
-  app_name = url_params.app_name
-  deleteKey = url_params.deleteKey
+  url_params = purl.parse(req.url, true).query;
+  public_address = url_params.public_address;
+  app_name = url_params.app_name;
+  app_description = url_params.app_description;
+  built_by = url_params.built_by;
+  website = url_params.website;
+  github = url_params.github;
+  key_count = url_params.key_count;
+  create_app = url_params.create_app;
+  delete_app = url_params.delete_app;
+  app_info = url_params.app_info;
+  create_key = url_params.create_key;
+  delete_key = url_params.delete_key;
 
-  console.log(`Visitor:${ip} the dev settings page.`)
+  console.log(`Visitor:${public_address} landed on the dev settings page.`);
 
-  if (deleteKey) {
-    query = 'DELETE FROM app_header WHERE api_key = ?'
+  query = `SELECT DISTINCT app_name FROM app_header WHERE public_address = ? order by app_name asc`;
+  params = [public_address];
+  appRecords = await getData(query, params)
+    .then((results) => {
+      //console.log('Query results:', results);
+      return results;
+      // Use the results in your variable or perform further operations
+    })
+    .catch((error) => {
+      console.error("Error retrieving data:", error);
+    });
+
+  if (!app_name) {
+    app_name = appRecords[0].app_name;
+  }
+
+  query = `SELECT * FROM app_header WHERE app_name = ?`;
+  params = [app_name];
+  keyRecords = await getData(query, params)
+    .then((results) => {
+      //console.log('Query results:', results);
+      return results;
+      // Use the results in your variable or perform further operations
+    })
+    .catch((error) => {
+      console.error("Error retrieving data:", error);
+    });
+
+  if (create_app) {
+    if (appRecords.length >= 3) {
+      res.json({
+        appRecords: appRecords,
+        keyRecords: keyRecords,
+        public_address: public_address,
+        msg: `You may only have 3 apps at a time.`,
+      });
+      return;
+    }
+
+    access = "Basic";
+    for (i = 0; i < Number(key_count); i++) {
+      api_key = await randomWord(Math.floor(25) + 5);
+      query = `INSERT INTO app_header values (?,?,?,?,?,?,?,?,?)`;
+      await othubdb_connection.query(
+        query,
+        [
+          api_key,
+          public_address,
+          create_app,
+          access,
+          app_description,
+          website,
+          github,
+          built_by,
+          null,
+        ],
+        function (error, results, fields) {
+          if (error) throw error;
+        }
+      );
+    }
+  }
+
+  if (delete_app) {
+    query = `DELETE FROM app_header WHERE app_name = ?`;
     await othubdb_connection.query(
       query,
-      [deleteKey],
+      [delete_app],
       function (error, results, fields) {
-        if (error) throw error
+        if (error) throw error;
       }
-    )
-
-    query = `SELECT * FROM app_header WHERE public_address = ?`
-    params = [public_address]
-    userRecords = await getData(query, params)
-      .then(results => {
-        //console.log('Query results:', results);
-        return results
-        // Use the results in your variable or perform further operations
-      })
-      .catch(error => {
-        console.error('Error retrieving data:', error)
-      })
-
-    res.json({
-      userRecords: userRecords,
-      public_address: public_address,
-      msg: `SUCCESS! Your API Key was deleted.`
-    })
-    return
+    );
   }
 
-  if (app_name) {
-      query = `SELECT * FROM app_header WHERE public_address = ?`
-      params = [public_address]
-    userRecords = await getData(query, params)
-      .then(results => {
-        //console.log('Query results:', results);
-        return results
-        // Use the results in your variable or perform further operations
-      })
-      .catch(error => {
-        console.error('Error retrieving data:', error)
-      })
+  if (create_key && Number(create_key) + Number(keyRecords.length) <= 5) {
+    access = "Basic";
+    for (i = 0; i < Number(create_key); i++) {
+      api_key = await randomWord(Math.floor(25) + 5);
+      query = `INSERT INTO app_header values (?,?,?,?,?,?,?,?,?)`;
+      await othubdb_connection.query(
+        query,
+        [
+          api_key,
+          public_address,
+          app_name,
+          access,
+          app_description,
+          website,
+          github,
+          built_by,
+          null,
+        ],
+        function (error, results, fields) {
+          if (error) throw error;
+        }
+      );
+    }
+  }
 
-    console.log(userRecords)
+  if (delete_key) {
+    query = `DELETE FROM app_header WHERE api_key = ?`;
+    await othubdb_connection.query(
+      query,
+      [delete_key],
+      function (error, results, fields) {
+        if (error) throw error;
+      }
+    );
+  }
 
-    if (userRecords != '') {
-      if (userRecords.length >= 1) {
-        res.json({
-          userRecords: userRecords,
-          public_address: public_address,
-          msg: `FAIL! You may only have 1 api key at a time.`
-        })
-        return
+  query = `SELECT DISTINCT app_name FROM app_header WHERE public_address = ? order by app_name asc`;
+  params = [public_address];
+  appRecords = await getData(query, params)
+    .then((results) => {
+      //console.log('Query results:', results);
+      return results;
+      // Use the results in your variable or perform further operations
+    })
+    .catch((error) => {
+      console.error("Error retrieving data:", error);
+    });
+
+  query = `SELECT * FROM app_header WHERE app_name = ?`;
+  params = [app_name];
+  keyRecords = await getData(query, params)
+    .then((results) => {
+      //console.log('Query results:', results);
+      return results;
+      // Use the results in your variable or perform further operations
+    })
+    .catch((error) => {
+      console.error("Error retrieving data:", error);
+    });
+
+    if (url_params.network == "Origintrail Parachain Testnet") {
+      network = "otp::testnet"
+    }
+    if (url_params.network == "Origintrail Parachain Mainnet") {
+      network = "otp::mainnet"
+    }
+
+  query = `SELECT * FROM txn_header WHERE app_name = ? AND network = ?`;
+  params = [app_name, network];
+  app_txns = await getData(query, params)
+    .then((results) => {
+      //console.log('Query results:', results);
+      return results;
+      // Use the results in your variable or perform further operations
+    })
+    .catch((error) => {
+      console.error("Error retrieving data:", error);
+    });
+
+    assets = 0
+    for (i = 0; i < app_txns.length; i++) {
+      if(app_txns[i].request === 'Publish' && app_txns[i].progress === 'COMPLETE'){
+        assets = assets + 1
       }
     }
 
-    api_key = await randomWord(Math.floor(25) + 5)
-
-    query = `INSERT INTO app_header values (?,?,?,?)`
-    await othubdb_connection.query(
-      query,
-      [api_key, public_address, app_name, 'Basic'],
-      function (error, results, fields) {
-        if (error) throw error
-      }
-    )
-
-    query = `SELECT * FROM app_header WHERE public_address = ?`
-    params = [public_address]
-    userRecords = await getData(query, params)
-      .then(results => {
+    query = `select * from enabled_apps where app_name = ?`;
+    params = [app_name];
+    users = await getData(query, params)
+      .then((results) => {
         //console.log('Query results:', results);
-        return results
+        return results;
         // Use the results in your variable or perform further operations
       })
-      .catch(error => {
-        console.error('Error retrieving data:', error)
-      })
-
-    res.json({
-      userRecords: userRecords,
-      public_address: public_address,
-      msg: `SUCCESS! A new API Key has been created!`
-    })
-    return;
-  }
-
-  query = `SELECT * FROM app_header WHERE public_address = ?`
-  params = [public_address]
-  userRecords = await getData(query, params)
-    .then(results => {
-      //console.log('Query results:', results);
-      return results
-      // Use the results in your variable or perform further operations
-    })
-    .catch(error => {
-      console.error('Error retrieving data:', error)
-    })
+      .catch((error) => {
+        console.error("Error retrieving data:", error);
+      });
 
   res.json({
-    userRecords: userRecords,
+    appRecords: appRecords,
+    keyRecords: keyRecords,
     public_address: public_address,
-    msg: ` `
-  })
-  return
-})
+    app_txns: app_txns,
+    users: users,
+    assets: assets,
+    msg: ``,
+  });
+  return;
+});
 
-module.exports = router
+module.exports = router;

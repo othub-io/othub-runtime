@@ -16,12 +16,17 @@ const nodesRouter = require('./routes/nodes')
 //portal
 const portalAssetsRouter = require('./routes/portal/assets')
 const portalGatewayRouter = require('./routes/portal/gateway')
+const appSettingsRouter = require('./routes/portal/app-settings')
 
 //staking
 const stakingSettingsRouter = require('./routes/staking/settings')
 
 //build
 const buildSettingsRouter = require('./routes/build/settings')
+const createAppRouter = require('./routes/build/create-app')
+const deleteAppRouter = require('./routes/build/delete-app')
+const createKeyRouter = require('./routes/build/create-key')
+const deleteKeyRouter = require('./routes/build/delete-key')
 
 //const allianceRegisterRouter = require('./routes/alliance/register')
 //const allianceDashboardRouter = require('./routes/alliance/dashboard')
@@ -42,10 +47,15 @@ app.use('/nodes', nodesRouter)
 
 //build
 app.use('/build/settings', buildSettingsRouter)
+app.use('/build/create-app', createAppRouter)
+app.use('/build/delete-app', deleteAppRouter)
+app.use('/build/create-key', createKeyRouter)
+app.use('/build/delete-key', deleteKeyRouter)
 
 //portal
 app.use('/portal/assets', portalAssetsRouter)
 app.use('/portal/gateway', portalGatewayRouter)
+app.use('/portal/app-settings', appSettingsRouter)
 
 //dkg
 //app.use('/dkg/get', getRouter)
