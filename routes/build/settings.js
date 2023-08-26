@@ -63,22 +63,13 @@ router.get("/", async function (req, res, next) {
   url_params = purl.parse(req.url, true).query;
   public_address = url_params.public_address;
   app_name = url_params.app_name;
-  app_description = url_params.app_description;
-  built_by = url_params.built_by;
-  website = url_params.website;
-  github = url_params.github;
-  key_count = url_params.key_count;
-  create_app = url_params.create_app;
-  delete_app = url_params.delete_app;
-  app_info = url_params.app_info;
-  create_key = url_params.create_key;
-  delete_key = url_params.delete_key;
+  keyRecords = [];
 
   console.log(`Visitor:${public_address} landed on the dev settings page.`);
 
   query = `SELECT DISTINCT app_name FROM app_header WHERE public_address = ? order by app_name asc`;
   params = [public_address];
-  appRecords = await getData(query, params)
+    appNames = await getData(query, params)
     .then((results) => {
       //console.log('Query results:', results);
       return results;
@@ -88,127 +79,33 @@ router.get("/", async function (req, res, next) {
       console.error("Error retrieving data:", error);
     });
 
-  if (!app_name) {
-    app_name = appRecords[0].app_name;
-  }
-
-  query = `SELECT * FROM app_header WHERE app_name = ?`;
-  params = [app_name];
-  keyRecords = await getData(query, params)
-    .then((results) => {
-      //console.log('Query results:', results);
-      return results;
-      // Use the results in your variable or perform further operations
-    })
-    .catch((error) => {
-      console.error("Error retrieving data:", error);
-    });
-
-  if (create_app) {
-    if (appRecords.length >= 3) {
-      res.json({
-        appRecords: appRecords,
-        keyRecords: keyRecords,
-        public_address: public_address,
-        msg: `You may only have 3 apps at a time.`,
-      });
-      return;
+    if (!app_name && appNames[0]) {
+        app_name = appNames[0].app_name
     }
 
-    access = "Basic";
-    for (i = 0; i < Number(key_count); i++) {
-      api_key = await randomWord(Math.floor(25) + 5);
-      query = `INSERT INTO app_header values (?,?,?,?,?,?,?,?,?)`;
-      await othubdb_connection.query(
-        query,
-        [
-          api_key,
-          public_address,
-          create_app,
-          access,
-          app_description,
-          website,
-          github,
-          built_by,
-          null,
-        ],
-        function (error, results, fields) {
-          if (error) throw error;
-        }
-      );
-    }
-  }
+    query = `SELECT * FROM app_header WHERE app_name = ?`;
+    params = [app_name];
+    keyRecords = await getData(query, params)
+        .then((results) => {
+            //console.log('Query results:', results);
+            return results;
+            // Use the results in your variable or perform further operations
+        })
+        .catch((error) => {
+            console.error("Error retrieving data:", error);
+        });
 
-  if (delete_app) {
-    query = `DELETE FROM app_header WHERE app_name = ?`;
-    await othubdb_connection.query(
-      query,
-      [delete_app],
-      function (error, results, fields) {
-        if (error) throw error;
-      }
-    );
-  }
-
-  if (create_key && Number(create_key) + Number(keyRecords.length) <= 5) {
-    access = "Basic";
-    for (i = 0; i < Number(create_key); i++) {
-      api_key = await randomWord(Math.floor(25) + 5);
-      query = `INSERT INTO app_header values (?,?,?,?,?,?,?,?,?)`;
-      await othubdb_connection.query(
-        query,
-        [
-          api_key,
-          public_address,
-          app_name,
-          access,
-          app_description,
-          website,
-          github,
-          built_by,
-          null,
-        ],
-        function (error, results, fields) {
-          if (error) throw error;
-        }
-      );
-    }
-  }
-
-  if (delete_key) {
-    query = `DELETE FROM app_header WHERE api_key = ?`;
-    await othubdb_connection.query(
-      query,
-      [delete_key],
-      function (error, results, fields) {
-        if (error) throw error;
-      }
-    );
-  }
-
-  query = `SELECT DISTINCT app_name FROM app_header WHERE public_address = ? order by app_name asc`;
-  params = [public_address];
-  appRecords = await getData(query, params)
-    .then((results) => {
-      //console.log('Query results:', results);
-      return results;
-      // Use the results in your variable or perform further operations
-    })
-    .catch((error) => {
-      console.error("Error retrieving data:", error);
-    });
-
-  query = `SELECT * FROM app_header WHERE app_name = ?`;
-  params = [app_name];
-  keyRecords = await getData(query, params)
-    .then((results) => {
-      //console.log('Query results:', results);
-      return results;
-      // Use the results in your variable or perform further operations
-    })
-    .catch((error) => {
-      console.error("Error retrieving data:", error);
-    });
+    query = `SELECT * FROM app_header WHERE app_name = ? LIMIT 1`;
+    params = [app_name];
+    appRecords = await getData(query, params)
+        .then((results) => {
+            //console.log('Query results:', results);
+            return results;
+            // Use the results in your variable or perform further operations
+        })
+        .catch((error) => {
+            console.error("Error retrieving data:", error);
+        });
 
     if (url_params.network == "Origintrail Parachain Testnet") {
       network = "otp::testnet"
@@ -248,7 +145,8 @@ router.get("/", async function (req, res, next) {
         console.error("Error retrieving data:", error);
       });
 
-  res.json({
+    res.json({
+    appNames: appNames,
     appRecords: appRecords,
     keyRecords: keyRecords,
     public_address: public_address,

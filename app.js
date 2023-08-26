@@ -23,10 +23,10 @@ const stakingSettingsRouter = require('./routes/staking/settings')
 
 //build
 const buildSettingsRouter = require('./routes/build/settings')
-const createAppRouter = require('./routes/build/create-app')
-const deleteAppRouter = require('./routes/build/delete-app')
-const createKeyRouter = require('./routes/build/create-key')
-const deleteKeyRouter = require('./routes/build/delete-key')
+const createAppRouter = require('./routes/build/settings/create-app')
+const deleteAppRouter = require('./routes/build/settings/delete-app')
+const createKeyRouter = require('./routes/build/settings/create-key')
+const deleteKeyRouter = require('./routes/build/settings/delete-key')
 
 //const allianceRegisterRouter = require('./routes/alliance/register')
 //const allianceDashboardRouter = require('./routes/alliance/dashboard')

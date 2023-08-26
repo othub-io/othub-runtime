@@ -58,7 +58,18 @@ router.get("/", async function (req, res, next) {
           if (error) throw error;
         }
       );
-    }
+      }
+
+      if (url_params.completeTxn) {
+          query = `UPDATE txn_header set progress = 'COMPLETE' where txn_id = ?`;
+          await othubdb_connection.query(
+              query,
+              [url_params.completeTxn],
+              function (error, results, fields) {
+                  if (error) throw error;
+              }
+          );
+      }
 
     if (url_params.enable_apps) {
       console.log(url_params.enable_apps);
