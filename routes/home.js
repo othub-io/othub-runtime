@@ -61,7 +61,7 @@ router.get('/', async function (req, res, next) {
       console.error('Error retrieving data:', error)
     })
 
-    query = `select count(*) as count from v_pubs`
+    query = `select count(*) as count from v_pubs order by block_date`
   params = []
   pub_count = await getOTPData(query, params)
     .then(results => {

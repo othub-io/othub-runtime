@@ -122,6 +122,7 @@ router.get("/", async function (req, res, next) {
             console.error("Error retrieving data:", error);
         });
 
+    network = ''
     if (url_params.network == "Origintrail Parachain Testnet") {
         network = "otp::testnet"
     }
@@ -160,7 +161,7 @@ router.get("/", async function (req, res, next) {
             console.error("Error retrieving data:", error);
         });
 
-    console.log(`Visitor:${public_address} deleted api key ${delete_key}.`);
+    console.log(`Visitor:${public_address} deleted app ${app_name}.`);
     res.json({
         appNames: appNames,
         appRecords: appRecords,

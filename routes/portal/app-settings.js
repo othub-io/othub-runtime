@@ -7,7 +7,7 @@ const othubdb_connection = mysql.createConnection({
   host: process.env.DBHOST,
   user: process.env.DBUSER,
   password: process.env.DBPASSWORD,
-  database: process.env.SYNC_DB,
+  database: process.env.OTHUB_DB,
 });
 
 function executeOTHubQuery (query, params) {
@@ -49,10 +49,10 @@ router.get("/", async function (req, res, next) {
   );
 
   app_search = url_params.app_search
-  query = 'select DISTINCT app_name from othubdb.app_header where app_name = ?'
+  query = 'select * from othubdb.app_header where app_name = ? LIMIT 1'
   params = [app_search];
   if(app_search === ''){
-    query = 'select * from othubdb.app_header'
+      query = 'select DISTINCT app_name from othubdb.app_header'
     params = [];
   }
 
@@ -66,8 +66,41 @@ router.get("/", async function (req, res, next) {
       console.error("Error retrieving data:", error);
     });
 
+    sqlQuery = "select app_name from enabled_apps where public_address = ?";
+    params = [url_params.account];
+    enabled_apps = await getOTHubData(sqlQuery, params)
+        .then((results) => {
+            //console.log('Query results:', results);
+            return results;
+            // Use the results in your variable or perform further operations
+        })
+        .catch((error) => {
+            console.error("Error retrieving data:", error);
+        });
+
+    apps_enabled = [];
+    if (search_result) {
+        for (let i = 0; i < search_result.length; i++) {
+            let app_name = search_result[i].app_name;
+            let app_obj = {
+                app_name: app_name,
+                checked: false,
+            };
+
+            apps_enabled.push(app_obj);
+        }
+
+        for (let i = 0; i < apps_enabled.length; i++) {
+            if (enabled_apps.some((obj) => obj.app_name === apps_enabled[i].app_name)) {
+                apps_enabled[i].checked = true;
+            }
+        }
+    }
+
+    console.log(apps_enabled)
   res.json({
-    search_result: search_result
+      search_result: search_result,
+      apps_enabled: apps_enabled
   });
 });
 

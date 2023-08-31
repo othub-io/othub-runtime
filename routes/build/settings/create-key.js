@@ -146,6 +146,7 @@ router.get("/", async function (req, res, next) {
             console.error("Error retrieving data:", error);
         });
 
+    network = ''
     if (url_params.network == "Origintrail Parachain Testnet") {
         network = "otp::testnet"
     }
