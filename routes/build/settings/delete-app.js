@@ -34,19 +34,6 @@ async function getData(query, params) {
     }
 }
 
-function randomWord(length) {
-    let result = "";
-    const characters =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    const charactersLength = characters.length;
-
-    for (let i = 0; i < length; ++i) {
-        result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-
-    return result;
-}
-
 router.get("/", async function (req, res, next) {
     ip = req.socket.remoteAddress;
     if (process.env.SSL_KEY_PATH) {
@@ -98,6 +85,30 @@ router.get("/", async function (req, res, next) {
             console.error("Error retrieving data:", error);
         });
 
+    query = `SELECT * FROM app_header WHERE public_address = ?`;
+    params = [public_address];
+    app = await getData(query, params)
+        .then((results) => {
+            //console.log('Query results:', results);
+            return results;
+            // Use the results in your variable or perform further operations
+        })
+        .catch((error) => {
+            console.error("Error retrieving data:", error);
+        });
+
+    if (!appNames) {
+        app_name = ''
+    }
+
+    if (appNames && appNames.some((obj) => obj.app_name != app[0].app_name)) {
+        app_name = appNames[0].app_name
+    }
+
+    if (appNames && appNames.some((obj) => obj.app_name === app[0].app_name)) {
+        app_name = app[0].app_name
+    }
+
     query = `SELECT * FROM app_header WHERE app_name = ?`;
     params = [app_name];
     keyRecords = await getData(query, params)
@@ -144,7 +155,7 @@ router.get("/", async function (req, res, next) {
 
     assets = 0
     for (i = 0; i < app_txns.length; i++) {
-        if (app_txns[i].request === 'Publish' && app_txns[i].progress === 'COMPLETE') {
+        if (app_txns[i].request === 'Create' && app_txns[i].progress === 'COMPLETE') {
             assets = assets + 1
         }
     }

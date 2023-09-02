@@ -169,7 +169,7 @@ router.get("/", async function (req, res, next) {
 
     assets = 0
     for (i = 0; i < app_txns.length; i++) {
-        if (app_txns[i].request === 'Publish' && app_txns[i].progress === 'COMPLETE') {
+        if (app_txns[i].request === 'Create' && app_txns[i].progress === 'COMPLETE') {
             assets = assets + 1
         }
     }

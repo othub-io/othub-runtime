@@ -50,42 +50,54 @@ router.get("/", async function (req, res, next) {
     url_params = purl.parse(req.url, true).query;
     public_address = url_params.public_address;
     app_name = url_params.app_name;
-    delete_key = url_params.delete_key;
     msg = ``
     keyRecords = [];
 
-    console.log(`Visitor:${public_address} is deleting api key ${delete_key}.`);
+    console.log(`Visitor:${public_address} is editing app ${app_name}.`);
 
-    query = `SELECT * FROM app_header WHERE api_key = ?`;
-    params = [delete_key];
-    app = await getData(query, params)
-        .then((results) => {
-            //console.log('Query results:', results);
-            return results;
-            // Use the results in your variable or perform further operations
-        })
-        .catch((error) => {
-            console.error("Error retrieving data:", error);
-        });
+    if (url_params.app_description && url_params.app_description !== '') {
+        query = `UPDATE app_header SET app_description = ? WHERE app_name = ?`;
+        await othubdb_connection.query(
+            query,
+            [url_params.app_description, app_name],
+            function (error, results, fields) {
+                if (error) throw error;
+            }
+        );
+    }
 
-        console.log(app)
-    query = `DELETE FROM app_header WHERE api_key = ?`;
-    await othubdb_connection.query(
-        query,
-        [delete_key],
-        function (error, results, fields) {
-            if (error) throw error;
-        }
-    );
+    if (url_params.built_by && url_params.built_by !== '') {
+        query = `UPDATE app_header SET built_by = ? WHERE app_name = ?`;
+        await othubdb_connection.query(
+            query,
+            [url_params.built_by, app_name],
+            function (error, results, fields) {
+                if (error) throw error;
+            }
+        );
+    }
 
-    query = `DELETE FROM txn_header WHERE api_key = ?`;
-    await othubdb_connection.query(
-        query,
-        [delete_key],
-        function (error, results, fields) {
-            if (error) throw error;
-        }
-    );
+    if (url_params.website && url_params.website !== '') {
+        query = `UPDATE app_header SET website = ? WHERE app_name = ?`;
+        await othubdb_connection.query(
+            query,
+            [url_params.website, app_name],
+            function (error, results, fields) {
+                if (error) throw error;
+            }
+        );
+    }
+
+    if (url_params.github && url_params.github !== '') {
+        query = `UPDATE app_header SET github = ? WHERE app_name = ?`;
+        await othubdb_connection.query(
+            query,
+            [url_params.github, app_name],
+            function (error, results, fields) {
+                if (error) throw error;
+            }
+        );
+    }
 
     query = `SELECT DISTINCT app_name FROM app_header WHERE public_address = ? order by app_name asc`;
     params = [public_address];
@@ -98,20 +110,6 @@ router.get("/", async function (req, res, next) {
         .catch((error) => {
             console.error("Error retrieving data:", error);
         });
-
-
-    if (!appNames) {
-        app_name = ''
-    }
-
-    if (appNames && appNames.some((obj) => obj.app_name != app[0].app_name)) {
-        app_name = appNames[0].app_name
-    }
-
-    if (appNames && appNames.some((obj) => obj.app_name === app[0].app_name)) {
-        app_name = app[0].app_name
-    }
-
 
     query = `SELECT * FROM app_header WHERE app_name = ?`;
     params = [app_name];
@@ -176,12 +174,11 @@ router.get("/", async function (req, res, next) {
             console.error("Error retrieving data:", error);
         });
 
-    console.log(`Visitor:${public_address} deleted api key ${delete_key}.`);
+    console.log(`Visitor:${public_address} deleted app ${app_name}.`);
     res.json({
         appNames: appNames,
         appRecords: appRecords,
         keyRecords: keyRecords,
-        public_address: public_address,
         app_txns: app_txns,
         users: users,
         assets: assets,

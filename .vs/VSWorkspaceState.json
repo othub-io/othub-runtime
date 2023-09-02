@@ -1,6 +1,12 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\routes",
+    "\\routes\\build",
+    "\\routes\\build\\settings",
+    "\\routes\\portal",
+    "\\routes\\staking"
   ],
+  "SelectedNode": "\\routes\\build\\settings\\filter.js",
   "PreviewInSolutionExplorer": false
 }
