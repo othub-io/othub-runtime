@@ -32,8 +32,7 @@ check_wins() {
 check_error() {
   logs=$(journalctl -u otnode --since '1 hour ago' | grep 'ERROR')
   if [[ -n "$logs" ]]; then
-    systemctl restart otnode
-    messages+=" Otnode service has been restarted. ERROR has been detected on $HOSTNAME: $logs"
+    messages+="ERROR has been detected on $HOSTNAME: $logs"
   fi
 }
 
