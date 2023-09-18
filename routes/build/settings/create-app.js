@@ -81,7 +81,7 @@ router.get("/", async function (req, res, next) {
       console.error("Error retrieving data:", error);
     });
 
-    if (appNames.length <= 3) {
+    if (appNames.length < 3) {
         access = "Basic";
         for (i = 0; i < Number(key_count); i++) {
             api_key = await randomWord(Math.floor(25) + 5);
@@ -109,6 +109,7 @@ router.get("/", async function (req, res, next) {
     } else {
         console.log(`Visitor:${public_address} tried creating an app but hit the limit.`);
         msg = `You may only have 3 apps at a time.`
+        app_name = appNames[0].app_name
     }
 
     query = `SELECT DISTINCT app_name FROM app_header WHERE public_address = ? order by app_name asc`;

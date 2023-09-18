@@ -17,6 +17,7 @@ const nodesRouter = require('./routes/nodes')
 const portalAssetsRouter = require('./routes/portal/assets')
 const portalGatewayRouter = require('./routes/portal/gateway')
 const appSettingsRouter = require('./routes/portal/app-settings')
+const inventoryRouter = require('./routes/portal/inventory')
 
 //staking
 const stakingSettingsRouter = require('./routes/staking/settings')
@@ -60,6 +61,7 @@ app.use('/build/delete-key', deleteKeyRouter)
 app.use('/portal/assets', portalAssetsRouter)
 app.use('/portal/gateway', portalGatewayRouter)
 app.use('/portal/app-settings', appSettingsRouter)
+app.use('/portal/inventory', inventoryRouter)
 
 //dkg
 //app.use('/dkg/get', getRouter)

@@ -61,10 +61,10 @@ router.get("/", async function (req, res, next) {
       }
 
       if (url_params.completeTxn) {
-          query = `UPDATE txn_header set progress = 'COMPLETE' where txn_id = ?`;
+          query = `UPDATE txn_header set progress = 'COMPLETE',ual = ?, epochs = ? where txn_id = ?`;
           await othubdb_connection.query(
               query,
-              [url_params.completeTxn],
+              [url_params.ual,url_params.epochs,url_params.completeTxn],
               function (error, results, fields) {
                   if (error) throw error;
               }

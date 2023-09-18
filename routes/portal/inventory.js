@@ -4,21 +4,46 @@ var router = express.Router();
 const mysql = require("mysql");
 const purl = require("url");
 
-function executeOTPQuery(query, params) {
+const otp_connection = mysql.createConnection({
+  host: process.env.DBHOST,
+  user: process.env.DBUSER,
+  password: process.env.DBPASSWORD,
+  database: process.env.SYNC_DB_TESTNET,
+});
+
+const otp_testnet_connection = mysql.createConnection({
+  host: process.env.DBHOST,
+  user: process.env.DBUSER,
+  password: process.env.DBPASSWORD,
+  database: process.env.SYNC_DB_TESTNET,
+});
+
+function executeOTPQuery(query, params, network) {
   return new Promise((resolve, reject) => {
-    otp_connection.query(query, params, (error, results) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve(results);
+    if (network == "Origintrail Parachain Testnet") {
+        otp_testnet_connection.query(query, params, (error, results) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(results);
+            }
+          });
       }
-    });
+      if (network == "Origintrail Parachain Mainnet") {
+        otp_connection.query(query, params, (error, results) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(results);
+            }
+          });
+      }
   });
 }
 
-async function getOTPData(query, params) {
+async function getOTPData(query, params, network) {
   try {
-    const results = await executeOTPQuery(query, params);
+    const results = await executeOTPQuery(query, params, network);
     return results;
   } catch (error) {
     console.error("Error executing query:", error);
@@ -42,25 +67,6 @@ router.get("/", async function (req, res, next) {
     "Origin, X-Requested-With, Content-Type, Accept"
   );
 
-  console.log('rtert'+ url_params.network)
-  if(url_params.network === 'Origintrail Parachain Testnet'){
-    const otp_connection = mysql.createConnection({
-      host: process.env.DBHOST,
-      user: process.env.DBUSER,
-      password: process.env.DBPASSWORD,
-      database: process.env.SYNC_DB_TESTNET,
-    });
-  }
-
-  if(url_params.network === 'Origintrail Parachain Mainnet'){
-    const otp_connection = mysql.createConnection({
-      host: process.env.DBHOST,
-      user: process.env.DBUSER,
-      password: process.env.DBPASSWORD,
-      database: process.env.SYNC_DB,
-    });
-  }
-
   query = `select * from v_pubs`;
   conditions = [];
   params = [];
@@ -68,25 +74,6 @@ router.get("/", async function (req, res, next) {
   limit = 100;
   if (url_params.limit && Number(url_params.limit)) {
     limit = url_params.limit;
-  }
-
-  if (url_params.nodeId && Number(url_params.nodeId)) {
-    nodeId = Number(url_params.nodeId);
-    conditions.push(`winners like ? OR winners like ? OR winners like ?`);
-
-    nodeId = `%"${nodeId},%`;
-    params.push(nodeId);
-
-    nodeId = `%,${nodeId},%`;
-    params.push(nodeId);
-
-    nodeId = `%,${nodeId}"%`;
-    params.push(nodeId);
-  }
-
-  if (url_params.publisher) {
-    conditions.push(`publisher = ?`);
-    params.push(url_params.publisher);
   }
 
   order_by = "block_ts_hour";
@@ -99,14 +86,18 @@ router.get("/", async function (req, res, next) {
     params.push(url_params.ual);
   }
 
+  if (url_params.owner) {
+    conditions.push(`owner = ?`);
+    params.push(url_params.owner);
+  }
+
   whereClause =
     conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
   sqlQuery =
     query + " " + whereClause + ` order by ${order_by} desc LIMIT ${limit}`;
 
   v_pubs = "";
-  console.log(sqlQuery);
-  v_pubs = await getOTPData(sqlQuery, params)
+  v_pubs = await getOTPData(sqlQuery, params, url_params.network)
     .then((results) => {
       //console.log('Query results:', results);
       return results;
