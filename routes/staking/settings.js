@@ -93,15 +93,16 @@ router.get('/', async function (req, res, next) {
   )
 
   url_params = purl.parse(req.url, true).query
-  admin_key = url_params.admin_key
+  public_address = url_params.public_address
   chain_id = url_params.chain_id
   botToken = url_params.botToken
   telegramID = url_params.telegramID
+  sendScript = url_params.sendScript
 
   nodeRecords = []
   operatorRecord = []
 
-  if (!admin_key) {
+  if (!public_address) {
     res.json({
       nodeRecords: nodeRecords,
       operatorRecord: operatorRecord,
@@ -110,7 +111,7 @@ router.get('/', async function (req, res, next) {
     return
   }
 
-  keccak256hash = keccak256(admin_key).toString('hex')
+  keccak256hash = keccak256(public_address).toString('hex')
   keccak256hash = '0x' + keccak256hash
   like_keccak256hash = '%' + keccak256hash + '%'
 
@@ -140,78 +141,14 @@ router.get('/', async function (req, res, next) {
 
   if(validToken === 'yes'){
     query =
-        'INSERT INTO node_operators (adminKey,botToken) VALUES (?,?) ON DUPLICATE KEY UPDATE botToken = ?'
+        'INSERT INTO node_operators (public_address,botToken) VALUES (?,?) ON DUPLICATE KEY UPDATE botToken = ?'
       await othubdb_connection.query(
         query,
-        [admin_key, botToken, botToken],
+        [public_address, botToken, botToken],
         function (error, results, fields) {
           if (error) throw error
         }
       )
-
-      query = `select * from node_operators where adminKey= ?`
-      params = [admin_key]
-      operatorRecord = await getOTHubData(query, params)
-        .then(results => {
-          return results
-        })
-        .catch(error => {
-          console.error('Error retrieving data:', error)
-        })
-
-      bot = new Telegraf(botToken)
-      if(operatorRecord[0].telegramID != ''){
-        query = `SELECT * FROM user_header WHERE admin_key = ?`
-        params = [admin_key]
-        userRecords = await getOTHubData(query, params)
-          .then(results => {
-            return results
-          })
-          .catch(error => {
-            console.error('Error retrieving data:', error)
-          })
-
-          if(userRecords != ''){
-            api_key = userRecords[0].api_key
-          }else{
-            api_key = await randomWord(Math.floor(25) + 5)
-            query = `INSERT INTO user_header SET api_key = ?, admin_key = ?, app_name = ?, access = ?`
-            await othubdb_connection.query(
-              query,
-              [api_key, admin_key, 'My Bot', 'Basic'],
-              function (error, results, fields) {
-                if (error) throw error
-              }
-            )
-          }
-
-        msg =`
-        Greetings from OThub.
-        
-Looks like you've added or changed your bot token. Here are commands to run to install/update the othub node monitoring script on your node(s):`
-
-        for (i = 0; i < nodeIds.length; ++i) {
-          msg = msg + `
-
-<-------Run this for Node ${nodeIds[i].tokenName}------->
-wget -O /etc/cron.hourly/node-hourly-monitor https://raw.githubusercontent.com/othub-io/othub-runtime/master/public/scripts/node-monitor-hourly.sh && 
-chmod +x /etc/cron.hourly/node-hourly-monitor &&
-mkdir -p /etc/othub && 
-echo -e "CHAT_ID="${operatorRecord[0].telegramID}" \nBOT_ID="${botToken}" \nNODE_ID="${nodeIds[i].nodeId}" \nAPI_KEY="${api_key}" \nMAX_STORAGE_PERCENT="90"" > /etc/othub/config
-
-          `
-        }
-
-        console.log(`Sending Message to users bot.`)
-        try{
-          await bot.telegram.sendMessage(
-            operatorRecord[0].telegramID ,
-            msg
-          )
-        }catch(e){
-          console.log(e);
-        }
-      }
   }
 
   if (telegramID && telegramID.length <= 10 && Number(telegramID)) {
@@ -219,49 +156,25 @@ echo -e "CHAT_ID="${operatorRecord[0].telegramID}" \nBOT_ID="${botToken}" \nNODE
       'INSERT INTO node_operators (adminKey,telegramID) VALUES (?,?) ON DUPLICATE KEY UPDATE telegramID = ?'
     await othubdb_connection.query(
       query,
-      [admin_key, telegramID, telegramID],
+      [public_address, telegramID, telegramID],
       function (error, results, fields) {
         if (error) throw error
       }
     )
+  }
 
-    query = `select * from node_operators where adminKey= ?`
-      params = [admin_key]
-      operatorRecord = await getOTHubData(query, params)
-        .then(results => {
-          return results
-        })
-        .catch(error => {
-          console.error('Error retrieving data:', error)
-        })
+  query = `select * from node_operators where adminKey = ?`
+  params = [public_address]
+  operatorRecord = await getOTHubData(query, params)
+    .then(results => {
+      return results
+    })
+    .catch(error => {
+      console.error('Error retrieving data:', error)
+    })
 
-      if(operatorRecord[0].botToken != ''){
-        bot = new Telegraf(operatorRecord[0].botToken)
-        query = `SELECT * FROM user_header WHERE admin_key = ?`
-        params = [admin_key]
-        userRecords = await getOTHubData(query, params)
-          .then(results => {
-            return results
-          })
-          .catch(error => {
-            console.error('Error retrieving data:', error)
-          })
-
-          if(userRecords != ''){
-            api_key = userRecords[0].api_key
-          }else{
-            api_key = await randomWord(Math.floor(25) + 5)
-            query = `INSERT INTO user_header SET api_key = ?, admin_key = ?, app_name = ?, access = ?`
-            await othubdb_connection.query(
-              query,
-              [api_key, admin_key, 'My Bot', 'Basic'],
-              function (error, results, fields) {
-                if (error) throw error
-              }
-            )
-          }
-
-        msg =`
+    if (sendScript && operatorRecord[0].telegramID && operatorRecord[0].botToken) {
+        msg = `
         Greetings from OThub.
         
 Looks like you've added or changed your Telegram ID. Here are commands to run to install/update the othub node monitoring script on your node(s):`
@@ -270,10 +183,10 @@ Looks like you've added or changed your Telegram ID. Here are commands to run to
           msg = msg + `
 
 <-------Run this for Node ${nodeIds[i].tokenName}------->
-wget -O /etc/cron.hourly/node-hourly-monitor https://raw.githubusercontent.com/othub-io/othub-runtime/master/public/scripts/node-monitor-hourly.sh && 
+wget -O /etc/cron.hourly/node-hourly-monitor https://raw.githubusercontent.com/othub-io/othub-runtime/master/public/scripts/node-monitor-hourly.sh &&
 chmod +x /etc/cron.hourly/node-hourly-monitor &&
-mkdir -p /etc/othub && 
-echo -e "CHAT_ID="${operatorRecord[0].telegramID}" \nBOT_ID="${operatorRecord[0].botToken}" \nNODE_ID="${nodeIds[i].nodeId}" \nAPI_KEY="${api_key}" \nMAX_STORAGE_PERCENT="90"" > /etc/othub/config
+mkdir -p /etc/othub &&
+echo -e "CHAT_ID="${operatorRecord[0].telegramID}" \nBOT_ID="${operatorRecord[0].botToken}" \nNODE_ID="${nodeIds[i].nodeId}" \nAPI_KEY="${process.env.NODE_OPS_KEY}" \nMAX_STORAGE_PERCENT="90"" > /etc/othub/config
 
           `
         }
@@ -287,18 +200,7 @@ echo -e "CHAT_ID="${operatorRecord[0].telegramID}" \nBOT_ID="${operatorRecord[0]
         }catch(e){
           console.log(e);
         }
-      }
-  }
-
-  query = `select * from node_operators where adminKey= ?`
-  params = [admin_key]
-  operatorRecord = await getOTHubData(query, params)
-    .then(results => {
-      return results
-    })
-    .catch(error => {
-      console.error('Error retrieving data:', error)
-    })
+    }
 
   nodeRecords = []
   for (i = 0; i < nodeIds.length; ++i) {
