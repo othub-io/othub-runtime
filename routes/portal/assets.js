@@ -3,6 +3,12 @@ var express = require("express");
 var router = express.Router();
 const mysql = require("mysql");
 const purl = require("url");
+const otp_connection = mysql.createConnection({
+  host: process.env.DBHOST,
+  user: process.env.DBUSER,
+  password: process.env.DBPASSWORD,
+  database: process.env.SYNC_DB,
+});
 
 function executeOTPQuery(query, params) {
   return new Promise((resolve, reject) => {
@@ -41,25 +47,6 @@ router.get("/", async function (req, res, next) {
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content-Type, Accept"
   );
-
-  console.log('rtert'+ url_params.network)
-  if(url_params.network === 'Origintrail Parachain Testnet'){
-    const otp_connection = mysql.createConnection({
-      host: process.env.DBHOST,
-      user: process.env.DBUSER,
-      password: process.env.DBPASSWORD,
-      database: process.env.SYNC_DB_TESTNET,
-    });
-  }
-
-  if(url_params.network === 'Origintrail Parachain Mainnet'){
-    const otp_connection = mysql.createConnection({
-      host: process.env.DBHOST,
-      user: process.env.DBUSER,
-      password: process.env.DBPASSWORD,
-      database: process.env.SYNC_DB,
-    });
-  }
 
   query = `select * from v_pubs`;
   conditions = [];

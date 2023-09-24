@@ -3,22 +3,21 @@ var express = require("express");
 var router = express.Router();
 const mysql = require("mysql");
 const purl = require("url");
-
 const otp_connection = mysql.createConnection({
-  host: process.env.DBHOST,
-  user: process.env.DBUSER,
-  password: process.env.DBPASSWORD,
-  database: process.env.SYNC_DB,
-});
+    host: process.env.DBHOST,
+    user: process.env.DBUSER,
+    password: process.env.DBPASSWORD,
+    database: process.env.SYNC_DB,
+  });
+  
+  const otp_testnet_connection = mysql.createConnection({
+    host: process.env.DBHOST,
+    user: process.env.DBUSER,
+    password: process.env.DBPASSWORD,
+    database: process.env.SYNC_DB_TESTNET,
+  });
 
-const otp_testnet_connection = mysql.createConnection({
-  host: process.env.DBHOST,
-  user: process.env.DBUSER,
-  password: process.env.DBPASSWORD,
-  database: process.env.SYNC_DB_TESTNET,
-});
-
-function executeOTPQuery(query, params, network) {
+function executeOTPQuery(query, params,network) {
   return new Promise((resolve, reject) => {
     if (network == "Origintrail Parachain Testnet") {
         otp_testnet_connection.query(query, params, (error, results) => {
@@ -43,7 +42,7 @@ function executeOTPQuery(query, params, network) {
 
 async function getOTPData(query, params, network) {
   try {
-    const results = await executeOTPQuery(query, params, network);
+    const results = await executeOTPQuery(query, params,network);
     return results;
   } catch (error) {
     console.error("Error executing query:", error);
@@ -59,6 +58,7 @@ router.get("/", async function (req, res, next) {
   }
 
   url_params = purl.parse(req.url, true).query;
+  orderby = url_params.orderby;
 
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
@@ -67,39 +67,43 @@ router.get("/", async function (req, res, next) {
     "Origin, X-Requested-With, Content-Type, Accept"
   );
 
-  query = `select * from v_pubs`;
+  const segments = url_params.ual.split(":");
+  const argsString =
+    segments.length === 3 ? segments[2] : segments[2] + segments[3];
+  const args = argsString.split("/");
+
+  if (args.length !== 3) {
+    console.log(`Get request with invalid ual from ${url_params.api_key}`);
+    resp_object = {
+      result: "Invalid UAL provided.",
+    };
+    res.send(resp_object);
+    return;
+  }
+
+  limit = url_params.limit;
+  if (!limit) {
+    limit = 500;
+  }
+
+  query = `SELECT * FROM v_asset_history`;
   conditions = [];
   params = [];
 
-  limit = 100;
-  if (url_params.limit && Number(url_params.limit)) {
-    limit = url_params.limit;
-  }
+  conditions.push(`asset_contract = ?`);
+  params.push(args[1]);
 
-  order_by = "block_ts_hour";
-  if (url_params.order) {
-    order_by = url_params.order;
-  }
+  conditions.push(`token_id = ?`);
+  params.push(args[2]);
 
-  if (url_params.ual) {
-    conditions.push(`ual = ?`);
-    params.push(url_params.ual);
-  }
-
-  console.log(url_params.owner)
-  if (url_params.owner) {
-    conditions.push(`owner = ?`);
-    params.push(url_params.owner);
-  }
+  conditions.push(
+    `(transfer_from != '0x0000000000000000000000000000000000000000' or transfer_from is null)`
+  );
 
   whereClause =
     conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
-  sqlQuery =
-    query + " " + whereClause + ` order by ${order_by} desc LIMIT ${limit}`;
-
-    console.log(sqlQuery)
-  v_pubs = "";
-  v_pubs = await getOTPData(sqlQuery, params, url_params.network)
+  sqlQuery = query + " " + whereClause + `LIMIT ${limit}`;
+  assetHistory = await getOTPData(sqlQuery, params, url_params.network)
     .then((results) => {
       //console.log('Query results:', results);
       return results;
@@ -109,13 +113,8 @@ router.get("/", async function (req, res, next) {
       console.error("Error retrieving data:", error);
     });
 
-  if (url_params.ual) {
-    console.log(v_pubs);
-  }
-
   res.json({
-    v_pubs: v_pubs,
-    msg: ``,
+    assetHistory: assetHistory
   });
 });
 

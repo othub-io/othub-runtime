@@ -31,9 +31,11 @@ const filterRouter = require('./routes/build/settings/filter')
 const createKeyRouter = require('./routes/build/settings/create-key')
 const deleteKeyRouter = require('./routes/build/settings/delete-key')
 
-//const allianceRegisterRouter = require('./routes/alliance/register')
-//const allianceDashboardRouter = require('./routes/alliance/dashboard')
-//const voteRouter = require('./routes/alliance/vote')
+//images
+const imagesRouter = require('./routes/images')
+
+//asset
+const assetHistoryRouter = require('./routes/asset/getHistory')
 
 const app = express()
 
@@ -71,7 +73,11 @@ app.use('/portal/inventory', inventoryRouter)
 //staking
 app.use('/staking/settings', stakingSettingsRouter)
 
-//app.use('/vote', voteRouter)
+//images
+app.use('/images', imagesRouter)
+
+//asset
+app.use('/asset/getHistory', assetHistoryRouter)
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
