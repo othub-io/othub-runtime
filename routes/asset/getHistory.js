@@ -27,8 +27,7 @@ function executeOTPQuery(query, params,network) {
               resolve(results);
             }
           });
-      }
-      if (network == "Origintrail Parachain Mainnet") {
+      }else {
         otp_connection.query(query, params, (error, results) => {
             if (error) {
               reject(error);
