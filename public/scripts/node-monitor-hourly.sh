@@ -22,8 +22,8 @@ check_storage() {
 
 check_wins() {
   ATTEMPTS=$(journalctl -u otnode --since "1 hour ago" | grep "Service agreement bid:" | wc -l)
-  WIN=$(curl -s "https://api.othub.io/otp/views/v_nodes_stats_last?api_key=$API_KEY&nodeId=$NODE_ID" | jq -r '.[0].pubsCommited1stEpochOnly')
-  NETWORKPUBS=$(curl -s "https://api.othub.io/otp/views/v_pubs_stats_last?api_key=$API_KEY" | jq -r '.[0].totalPubs')
+  WIN=$(curl -s "https://api.othub.io/otp/v_nodes_stats_last?api_key=$API_KEY&nodeId=$NODE_ID" | jq -r '.[0].pubsCommited1stEpochOnly')
+  NETWORKPUBS=$(curl -s "https://api.othub.io/otp/v_pubs_stats_last?api_key=$API_KEY" | jq -r '.[0].totalPubs')
 
   hourlypubs+=" $HOSTNAME won $WIN/$ATTEMPTS attempts with $NETWORKPUBS network pubs"
 }
