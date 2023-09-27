@@ -66,19 +66,6 @@ async function getOTPData (query, params) {
   }
 }
 
-function randomWord (length) {
-  let result = ''
-  const characters =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-  const charactersLength = characters.length
-
-  for (let i = 0; i < length; ++i) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength))
-  }
-
-  return result
-}
-
 router.get('/', async function (req, res, next) {
   ip = req.socket.remoteAddress
   if (process.env.SSL_KEY_PATH) {
@@ -153,7 +140,7 @@ router.get('/', async function (req, res, next) {
 
   if (telegramID && telegramID.length <= 10 && Number(telegramID)) {
     query =
-      'INSERT INTO node_operators (adminKey,telegramID) VALUES (?,?) ON DUPLICATE KEY UPDATE telegramID = ?'
+      'INSERT INTO node_operators (public_address,telegramID) VALUES (?,?) ON DUPLICATE KEY UPDATE telegramID = ?'
     await othubdb_connection.query(
       query,
       [public_address, telegramID, telegramID],
@@ -163,7 +150,7 @@ router.get('/', async function (req, res, next) {
     )
   }
 
-  query = `select * from node_operators where adminKey = ?`
+  query = `select * from node_operators where public_address = ?`
   params = [public_address]
   operatorRecord = await getOTHubData(query, params)
     .then(results => {
@@ -193,6 +180,7 @@ echo -e "CHAT_ID="${operatorRecord[0].telegramID}" \nBOT_ID="${operatorRecord[0]
 
         console.log(`Sending Message to users bot.`)
         try{
+          bot = new Telegraf(operatorRecord[0].botToken)
           await bot.telegram.sendMessage(
             operatorRecord[0].telegramID ,
             msg
