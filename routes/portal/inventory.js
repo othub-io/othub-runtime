@@ -98,6 +98,7 @@ router.get("/", async function (req, res, next) {
     query + " " + whereClause + ` order by ${order_by} desc LIMIT ${limit}`;
 
     console.log(sqlQuery)
+    console.log(params)
   v_pubs = "";
   v_pubs = await getOTPData(sqlQuery, params, url_params.network)
     .then((results) => {
