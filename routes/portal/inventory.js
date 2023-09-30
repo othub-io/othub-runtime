@@ -59,6 +59,15 @@ router.get("/", async function (req, res, next) {
   }
 
   url_params = purl.parse(req.url, true).query;
+  if(url_params.auth !== process.env.RUNTIME_AUTH){
+    console.log(`Runtime request received from ${ip} with invalid auth key.`);
+      resp_object = {
+        status: "401",
+        result: "401 Unauthorized: Auth Key does not match.",
+      };
+      res.send(resp_object);
+      return;
+  }
 
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
