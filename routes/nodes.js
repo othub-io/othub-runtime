@@ -40,7 +40,15 @@ router.get('/', async function (req, res, next) {
   }
 
   url_params = purl.parse(req.url, true).query
-  orderby = url_params.orderby
+  if(url_params.auth !== process.env.RUNTIME_AUTH){
+    console.log(`Runtime request received from ${ip} with invalid auth key.`);
+      resp_object = {
+        status: "401",
+        result: "401 Unauthorized: Auth Key does not match.",
+      };
+      res.send(resp_object);
+      return;
+  }
 
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE')
@@ -49,6 +57,7 @@ router.get('/', async function (req, res, next) {
     'Origin, X-Requested-With, Content-Type, Accept'
   )
 
+  orderby = url_params.orderby
   query = `select * from v_nodes where nodeStake >= 50000 AND nodeId not in ('83','98') order by ? desc`
   params = [orderby]
   v_nodes = await getOTPData(query, params)
