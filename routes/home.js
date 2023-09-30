@@ -39,16 +39,6 @@ router.get('/', async function (req, res, next) {
     ip = req.headers['x-forwarded-for']
   }
 
-  if(ip !== process.env.WHITE_LIST){
-    console.log(`v_nodes request without authorization.`);
-    resp_object = {
-      status: "401",
-      result: `401 Unauthorized: Blocklisted IP trying to reach runtime: ${ip}`,
-    };
-    res.send(resp_object);
-    return;
-  }
-  
   url_params = purl.parse(req.url, true).query
   orderby = url_params.orderby
 
