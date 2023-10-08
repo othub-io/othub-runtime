@@ -2,7 +2,7 @@ require("dotenv").config();
 var express = require("express");
 var router = express.Router();
 const mysql = require("mysql");
-const purl = require("url");
+const web3passport = require('../../auth/passport');
 const othubdb_connection = mysql.createConnection({
   host: process.env.DBHOST,
   user: process.env.DBUSER,
@@ -33,31 +33,15 @@ function executeOTHubQuery (query, params) {
   }
 
 /* GET explore page. */
-router.get("/", async function (req, res, next) {
+router.post("/", web3passport.authenticate('jwt', { session: false }), async function (req, res, next) {
   ip = req.socket.remoteAddress;
   if (process.env.SSL_KEY_PATH) {
     ip = req.headers["x-forwarded-for"];
   }
 
-  url_params = purl.parse(req.url, true).query;
-  if(url_params.auth !== process.env.RUNTIME_AUTH){
-    console.log(`Runtime request received from ${ip} with invalid auth key.`);
-      resp_object = {
-        status: "401",
-        result: "401 Unauthorized: Auth Key does not match.",
-      };
-      res.send(resp_object);
-      return;
-  }
+  data = req.body;
 
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
-  );
-
-  app_search = url_params.app_search
+  app_search = data.app_search
   query = 'select * from othubdb.app_header where app_name = ? LIMIT 1'
   params = [app_search];
   if(app_search === ''){
@@ -76,7 +60,7 @@ router.get("/", async function (req, res, next) {
     });
 
     sqlQuery = "select app_name from enabled_apps where public_address = ?";
-    params = [url_params.account];
+    params = [data.account];
     enabled_apps = await getOTHubData(sqlQuery, params)
         .then((results) => {
             //console.log('Query results:', results);

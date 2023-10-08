@@ -4,7 +4,19 @@ const express = require('express')
 const path = require('path')
 const cookieParser = require('cookie-parser')
 const logger = require('morgan')
+const cors = require('cors')
+const app = express()
 
+app.use(logger('dev'))
+app.use(express.json())
+app.use(express.urlencoded({ extended: false }))
+app.use(cookieParser())
+app.use(express.static(path.join(__dirname, 'public')))
+app.use(express.static(path.join(__dirname, 'node_modules')))
+app.use('/dkg', express.static(__dirname + 'node_modules/dkg.js'))
+app.use(cors())
+
+//main
 const homeRouter = require('./routes/home')
 const nodesRouter = require('./routes/nodes')
 
@@ -37,15 +49,9 @@ const imagesRouter = require('./routes/images')
 //asset
 const assetHistoryRouter = require('./routes/asset/getHistory')
 
-const app = express()
-
-app.use(logger('dev'))
-app.use(express.json())
-app.use(express.urlencoded({ extended: false }))
-app.use(cookieParser())
-app.use(express.static(path.join(__dirname, 'public')))
-app.use(express.static(path.join(__dirname, 'node_modules')))
-app.use('/dkg', express.static(__dirname + 'node_modules/dkg.js'))
+//user
+const registerRouter = require('./routes/users/register')
+const signRouter = require('./routes/users/sign')
 
 app.use('/home', homeRouter)
 app.use('/nodes', nodesRouter)
@@ -79,6 +85,10 @@ app.use('/images', imagesRouter)
 //asset
 app.use('/asset/getHistory', assetHistoryRouter)
 
+//asset
+app.use('/users/register', registerRouter)
+app.use('/users/sign', signRouter)
+
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404))
@@ -89,6 +99,7 @@ app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message
   res.locals.error = req.app.get('env') === 'development' ? err : {}
+  console.log(err)
 
   // render the error page
   res.status(err.status || 500)

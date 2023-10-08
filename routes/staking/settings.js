@@ -1,12 +1,11 @@
 require('dotenv').config()
 var express = require('express')
 var router = express.Router()
-const purl = require('url')
 const keccak256 = require('keccak256')
 const mysql = require('mysql')
-const { Console } = require('console')
 const { Telegraf } = require('telegraf')
 const axios = require('axios')
+const web3passport = require('../../auth/passport');
 
 const othubdb_connection = mysql.createConnection({
   host: process.env.DBHOST,
@@ -66,35 +65,18 @@ async function getOTPData (query, params) {
   }
 }
 
-router.get('/', async function (req, res, next) {
+router.get('/', web3passport.authenticate('jwt', { session: false }), async function (req, res, next) {
   ip = req.socket.remoteAddress
   if (process.env.SSL_KEY_PATH) {
     ip = req.headers['x-forwarded-for']
   }
 
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE')
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept'
-  )
-
-  url_params = purl.parse(req.url, true).query
-  if(url_params.auth !== process.env.RUNTIME_AUTH){
-    console.log(`Runtime request received from ${ip} with invalid auth key.`);
-      resp_object = {
-        status: "401",
-        result: "401 Unauthorized: Auth Key does not match.",
-      };
-      res.send(resp_object);
-      return;
-  }
-  
-  public_address = url_params.public_address
-  chain_id = url_params.chain_id
-  botToken = url_params.botToken
-  telegramID = url_params.telegramID
-  sendScript = url_params.sendScript
+  data = req.body;
+  public_address = req.user[0].public_address
+  chain_id = data.chain_id
+  botToken = data.botToken
+  telegramID = data.telegramID
+  sendScript = data.sendScript
 
   nodeRecords = []
   operatorRecord = []
