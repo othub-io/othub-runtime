@@ -1,8 +1,8 @@
 require("dotenv").config();
 var express = require("express");
 var router = express.Router();
-const purl = require("url");
 const mysql = require("mysql");
+const web3passport = require('../../../auth/passport');
 const othubdb_connection = mysql.createConnection({
     host: process.env.DBHOST,
     user: process.env.DBUSER,
@@ -34,75 +34,58 @@ async function getData(query, params) {
     }
 }
 
-router.get("/", async function (req, res, next) {
+router.get("/", web3passport.authenticate('jwt', { session: false }), async function (req, res, next) {
     ip = req.socket.remoteAddress;
     if (process.env.SSL_KEY_PATH) {
         ip = req.headers["x-forwarded-for"];
     }
 
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-    res.setHeader(
-        "Access-Control-Allow-Headers",
-        "Origin, X-Requested-With, Content-Type, Accept"
-    );
-
-    url_params = purl.parse(req.url, true).query;
-    if(url_params.auth !== process.env.RUNTIME_AUTH){
-        console.log(`Runtime request received from ${ip} with invalid auth key.`);
-          resp_object = {
-            status: "401",
-            result: "401 Unauthorized: Auth Key does not match.",
-          };
-          res.send(resp_object);
-          return;
-      }
-      
-    public_address = url_params.public_address;
-    app_name = url_params.app_name;
+    data = req.body;
+    public_address = req.user[0].public_address;
+    app_name = data.app_name;
     msg = ``
     keyRecords = [];
 
     console.log(`Visitor:${public_address} is editing app ${app_name}.`);
 
-    if (url_params.app_description && url_params.app_description !== '') {
+    if (data.app_description && data.app_description !== '') {
         query = `UPDATE app_header SET app_description = ? WHERE app_name = ?`;
         await othubdb_connection.query(
             query,
-            [url_params.app_description, app_name],
+            [data.app_description, app_name],
             function (error, results, fields) {
                 if (error) throw error;
             }
         );
     }
 
-    if (url_params.built_by && url_params.built_by !== '') {
+    if (data.built_by && data.built_by !== '') {
         query = `UPDATE app_header SET built_by = ? WHERE app_name = ?`;
         await othubdb_connection.query(
             query,
-            [url_params.built_by, app_name],
+            [data.built_by, app_name],
             function (error, results, fields) {
                 if (error) throw error;
             }
         );
     }
 
-    if (url_params.website && url_params.website !== '') {
+    if (data.website && data.website !== '') {
         query = `UPDATE app_header SET website = ? WHERE app_name = ?`;
         await othubdb_connection.query(
             query,
-            [url_params.website, app_name],
+            [data.website, app_name],
             function (error, results, fields) {
                 if (error) throw error;
             }
         );
     }
 
-    if (url_params.github && url_params.github !== '') {
+    if (data.github && data.github !== '') {
         query = `UPDATE app_header SET github = ? WHERE app_name = ?`;
         await othubdb_connection.query(
             query,
-            [url_params.github, app_name],
+            [data.github, app_name],
             function (error, results, fields) {
                 if (error) throw error;
             }
@@ -146,10 +129,10 @@ router.get("/", async function (req, res, next) {
         });
 
     network = ''
-    if (url_params.network == "Origintrail Parachain Testnet") {
+    if (data.network == "Origintrail Parachain Testnet") {
         network = "otp::testnet"
     }
-    if (url_params.network == "Origintrail Parachain Mainnet") {
+    if (data.network == "Origintrail Parachain Mainnet") {
         network = "otp::mainnet"
     }
 

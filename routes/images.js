@@ -1,7 +1,6 @@
 require('dotenv').config()
 var express = require('express')
 var router = express.Router()
-const purl = require('url')
 
 /* GET explore page. */
 router.get('/', async function (req, res, next) {
@@ -10,15 +9,8 @@ router.get('/', async function (req, res, next) {
     ip = req.headers['x-forwarded-for']
   }
 
-  url_params = purl.parse(req.url, true).query
-  src = url_params.src
-
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE')
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept'
-  )
+  data = req.body;
+  src = data.src
 
   try{
     res.sendFile(`${__dirname}/img/${src}`);

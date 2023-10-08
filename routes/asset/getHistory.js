@@ -2,7 +2,6 @@ require("dotenv").config();
 var express = require("express");
 var router = express.Router();
 const mysql = require("mysql");
-const purl = require("url");
 const otp_connection = mysql.createConnection({
     host: process.env.DBHOST,
     user: process.env.DBUSER,
@@ -56,31 +55,15 @@ router.get("/", async function (req, res, next) {
     ip = req.headers["x-forwarded-for"];
   }
 
-  url_params = purl.parse(req.url, true).query;
-  if(url_params.auth !== process.env.RUNTIME_AUTH){
-    console.log(`Runtime request received from ${ip} with invalid auth key.`);
-      resp_object = {
-        status: "401",
-        result: "401 Unauthorized: Auth Key does not match.",
-      };
-      res.send(resp_object);
-      return;
-  }
+  data = req.body;
 
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
-  );
-
-  const segments = url_params.ual.split(":");
+  const segments = data.ual.split(":");
   const argsString =
     segments.length === 3 ? segments[2] : segments[2] + segments[3];
   const args = argsString.split("/");
 
   if (args.length !== 3) {
-    console.log(`Get request with invalid ual from ${url_params.api_key}`);
+    console.log(`Get request with invalid ual from ${data.api_key}`);
     resp_object = {
       result: "Invalid UAL provided.",
     };
@@ -88,7 +71,7 @@ router.get("/", async function (req, res, next) {
     return;
   }
 
-  limit = url_params.limit;
+  limit = data.limit;
   if (!limit) {
     limit = 500;
   }
@@ -110,7 +93,7 @@ router.get("/", async function (req, res, next) {
   whereClause =
     conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
   sqlQuery = query + " " + whereClause + `LIMIT ${limit}`;
-  assetHistory = await getOTPData(sqlQuery, params, url_params.network)
+  assetHistory = await getOTPData(sqlQuery, params, data.network)
     .then((results) => {
       //console.log('Query results:', results);
       return results;

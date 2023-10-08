@@ -2,7 +2,7 @@ require("dotenv").config();
 var express = require("express");
 var router = express.Router();
 const mysql = require("mysql");
-const purl = require("url");
+const web3passport = require('../../auth/passport');
 const othubdb_connection = mysql.createConnection({
   host: process.env.DBHOST,
   user: process.env.DBUSER,
@@ -33,65 +33,49 @@ async function getOTHubData(query, params) {
 }
 
 /* GET explore page. */
-router.get("/", async function (req, res, next) {
+router.get("/", web3passport.authenticate('jwt', { session: false }), async function (req, res, next) {
   try {
     ip = req.socket.remoteAddress;
     if (process.env.SSL_KEY_PATH) {
       ip = req.headers["x-forwarded-for"];
     }
 
-    url_params = purl.parse(req.url, true).query;
-    if(url_params.auth !== process.env.RUNTIME_AUTH){
-      console.log(`Runtime request received from ${ip} with invalid auth key.`);
-        resp_object = {
-          status: "401",
-          result: "401 Unauthorized: Auth Key does not match.",
-        };
-        res.send(resp_object);
-        return;
-    }
+    data = req.body;
 
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-    res.setHeader(
-      "Access-Control-Allow-Headers",
-      "Origin, X-Requested-With, Content-Type, Accept"
-    );
-
-    if (url_params.rejectTxn) {
+    if (data.rejectTxn) {
       query = `UPDATE txn_header set progress = 'REJECTED' where txn_id = ?`;
       await othubdb_connection.query(
         query,
-        [url_params.rejectTxn],
+        [data.rejectTxn],
         function (error, results, fields) {
           if (error) throw error;
         }
       );
       }
 
-      if (url_params.completeTxn) {
+      if (data.completeTxn) {
           query = `UPDATE txn_header set progress = 'COMPLETE',ual = ?, epochs = ? where txn_id = ?`;
           await othubdb_connection.query(
               query,
-              [url_params.ual,url_params.epochs,url_params.completeTxn],
+              [data.ual,data.epochs,data.completeTxn],
               function (error, results, fields) {
                   if (error) throw error;
               }
           );
       }
 
-    if (url_params.enable_apps) {
-      console.log(url_params.enable_apps);
+    if (data.enable_apps) {
+      console.log(data.enable_apps);
       query = "DELETE FROM enabled_apps WHERE public_address = ?";
       await othubdb_connection.query(
         query,
-        [url_params.account],
+        [req.user[0].public_address],
         function (error, results, fields) {
           if (error) throw error;
         }
       );
 
-      enable_apps = JSON.parse(url_params.enable_apps);
+      enable_apps = JSON.parse(data.enable_apps);
       for (const key in enable_apps) {
         const value = enable_apps[key];
         console.log(key);
@@ -101,7 +85,7 @@ router.get("/", async function (req, res, next) {
             "INSERT INTO enabled_apps (public_address,app_name) VALUES (?,?)";
           await othubdb_connection.query(
             query,
-            [url_params.account, key],
+            [req.user[0].public_address, key],
             function (error, results, fields) {
               if (error) throw error;
             }
@@ -115,55 +99,55 @@ router.get("/", async function (req, res, next) {
     params = [];
 
     limit = 100;
-    if (url_params.limit && Number(url_params.limit)) {
-      limit = url_params.limit;
+    if (data.limit && Number(data.limit)) {
+      limit = data.limit;
     }
 
-    if (url_params.account) {
-      conditions.push(`public_address = ?`);
-      params.push(url_params.account);
+    if (req.user[0].public_address) {
+      conditions.push(`approver = ?`);
+      params.push(req.user[0].public_address);
     }
 
-    if (url_params.network == "Origintrail Parachain Testnet") {
+    if (data.network == "Origintrail Parachain Testnet") {
       conditions.push(`network = ?`);
       params.push("otp::testnet");
     }
-    if (url_params.network == "Origintrail Parachain Mainnet") {
+    if (data.network == "Origintrail Parachain Mainnet") {
       conditions.push(`network = ?`);
       params.push("otp::mainnet");
     }
 
-    if (url_params.txn_id) {
+    if (data.txn_id) {
       conditions.push(`txn_id = ?`);
-      params.push(url_params.txn_id);
+      params.push(data.txn_id);
     }
 
-    if (url_params.app_name) {
+    if (data.app_name) {
       conditions.push(`app_name = ?`);
-      params.push(url_params.app_name);
+      params.push(data.app_name);
     }
 
-    if (url_params.ual) {
+    if (data.ual) {
       conditions.push(`ual = ?`);
-      params.push(url_params.ual);
+      params.push(data.ual);
     }
 
-    if (url_params.progress == "COMPLETE") {
+    if (data.progress == "COMPLETE") {
       conditions.push(`progress = ?`);
-      params.push(url_params.progress);
+      params.push(data.progress);
     }
 
-    if (url_params.progress == "PENDING") {
+    if (data.progress == "PENDING") {
       conditions.push(`progress = ?`);
-      params.push(url_params.progress);
+      params.push(data.progress);
     }
 
-    if (url_params.progress == "REJECTED") {
+    if (data.progress == "REJECTED") {
       conditions.push(`progress = ?`);
-      params.push(url_params.progress);
+      params.push(data.progress);
     }
 
-    if (url_params.progress == "ALL") {
+    if (data.progress == "ALL") {
       conditions.push(`progress in (?,?,?)`);
       params.push("COMPLETE");
       params.push("PENDING");
@@ -171,15 +155,15 @@ router.get("/", async function (req, res, next) {
     }
 
     if (
-      url_params.progress == "COMPLETE" ||
-      url_params.progress == "PENDING" ||
-      url_params.progress == "REJECTED"
+      data.progress == "COMPLETE" ||
+      data.progress == "PENDING" ||
+      data.progress == "REJECTED"
     ) {
       conditions.push(`progress = ?`);
-      params.push(url_params.progress);
+      params.push(data.progress);
     }
 
-    if (url_params.request == "ALL") {
+    if (data.request == "ALL") {
       conditions.push(`request in (?,?,?)`);
       params.push("Create");
       params.push("Update");
@@ -187,17 +171,17 @@ router.get("/", async function (req, res, next) {
     }
 
     if (
-      url_params.request == "Create" ||
-      url_params.request == "Update" ||
-      url_params.request == "Transfer"
+      data.request == "Create" ||
+      data.request == "Update" ||
+      data.request == "Transfer"
     ) {
       conditions.push(`request = ?`);
-      params.push(url_params.request);
+      params.push(data.request);
     }
 
     order_by = "created_at";
-    if (url_params.order_by) {
-      order_by = url_params.order_by;
+    if (data.order_by) {
+      order_by = data.order_by;
     }
 
     whereClause =
@@ -219,16 +203,16 @@ router.get("/", async function (req, res, next) {
     conditions = [];
     params = [];
 
-    if (url_params.account) {
+    if (req.user[0].public_address) {
       conditions.push(`public_address = ?`);
-      params.push(url_params.account);
+      params.push(req.user[0].public_address);
     }
 
     conditions.push(`network = ?`);
-    if (url_params.network == "Origintrail Parachain Testnet") {
+    if (data.network == "Origintrail Parachain Testnet") {
       params.push("otp::testnet");
     }
-    if (url_params.network == "Origintrail Parachain Mainnet") {
+    if (data.network == "Origintrail Parachain Mainnet") {
       params.push("otp::mainnet");
     }
 
@@ -248,7 +232,7 @@ router.get("/", async function (req, res, next) {
       });
 
     sqlQuery = "select app_name from enabled_apps where public_address = ?";
-    params = [url_params.account];
+    params = [req.user[0].public_address];
     enabled_apps = await getOTHubData(sqlQuery, params)
       .then((results) => {
         //console.log('Query results:', results);

@@ -2,7 +2,6 @@ require("dotenv").config();
 var express = require("express");
 var router = express.Router();
 const mysql = require("mysql");
-const purl = require("url");
 const otp_connection = mysql.createConnection({
   host: process.env.DBHOST,
   user: process.env.DBUSER,
@@ -57,37 +56,20 @@ router.get("/", async function (req, res, next) {
     ip = req.headers["x-forwarded-for"];
   }
 
-  url_params = purl.parse(req.url, true).query;
-  if(url_params.auth !== process.env.RUNTIME_AUTH){
-    console.log(`Runtime request received from ${ip} with invalid auth key.`);
-      resp_object = {
-        status: "401",
-        result: "401 Unauthorized: Auth Key does not match.",
-      };
-      res.send(resp_object);
-      return;
-  }
-  
-  network = url_params.network
-
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
-  );
+  data = req.body;
+  network = data.network
 
   query = `select * from v_pubs`;
   conditions = [];
   params = [];
 
   limit = 100;
-  if (url_params.limit && Number(url_params.limit)) {
-    limit = url_params.limit;
+  if (data.limit && Number(data.limit)) {
+    limit = data.limit;
   }
 
-  if (url_params.nodeId && Number(url_params.nodeId)) {
-    nodeId = Number(url_params.nodeId);
+  if (data.nodeId && Number(data.nodeId)) {
+    nodeId = Number(data.nodeId);
     conditions.push(`winners like ? OR winners like ? OR winners like ?`);
 
     nodeId = `%"${nodeId},%`;
@@ -100,19 +82,19 @@ router.get("/", async function (req, res, next) {
     params.push(nodeId);
   }
 
-  if (url_params.publisher) {
+  if (data.publisher) {
     conditions.push(`publisher = ?`);
-    params.push(url_params.publisher);
+    params.push(data.publisher);
   }
 
   order_by = "block_ts_hour";
-  if (url_params.order) {
-    order_by = url_params.order;
+  if (data.order) {
+    order_by = data.order;
   }
 
-  if (url_params.ual) {
+  if (data.ual) {
     conditions.push(`ual = ?`);
-    params.push(url_params.ual);
+    params.push(data.ual);
   }
 
   if (network == '') {
@@ -137,7 +119,7 @@ router.get("/", async function (req, res, next) {
       console.error("Error retrieving data:", error);
     });
 
-  if (url_params.ual) {
+  if (data.ual) {
     console.log(v_pubs);
   }
 

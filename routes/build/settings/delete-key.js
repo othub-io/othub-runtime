@@ -1,8 +1,8 @@
 require("dotenv").config();
 var express = require("express");
 var router = express.Router();
-const purl = require("url");
 const mysql = require("mysql");
+const web3passport = require('../../../auth/passport');
 const othubdb_connection = mysql.createConnection({
     host: process.env.DBHOST,
     user: process.env.DBUSER,
@@ -34,33 +34,16 @@ async function getData(query, params) {
     }
 }
 
-router.get("/", async function (req, res, next) {
+router.get("/", web3passport.authenticate('jwt', { session: false }), async function (req, res, next) {
     ip = req.socket.remoteAddress;
     if (process.env.SSL_KEY_PATH) {
         ip = req.headers["x-forwarded-for"];
     }
 
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-    res.setHeader(
-        "Access-Control-Allow-Headers",
-        "Origin, X-Requested-With, Content-Type, Accept"
-    );
-
-    url_params = purl.parse(req.url, true).query;
-    if(url_params.auth !== process.env.RUNTIME_AUTH){
-        console.log(`Runtime request received from ${ip} with invalid auth key.`);
-          resp_object = {
-            status: "401",
-            result: "401 Unauthorized: Auth Key does not match.",
-          };
-          res.send(resp_object);
-          return;
-      }
-      
-    public_address = url_params.public_address;
-    app_name = url_params.app_name;
-    delete_key = url_params.delete_key;
+    data = req.body;
+    public_address = req.user[0].public_address;
+    app_name = data.app_name;
+    delete_key = data.delete_key;
     msg = ``
     keyRecords = [];
 
@@ -148,10 +131,10 @@ router.get("/", async function (req, res, next) {
         });
 
     network = ''
-    if (url_params.network == "Origintrail Parachain Testnet") {
+    if (data.network == "Origintrail Parachain Testnet") {
         network = "otp::testnet"
     }
-    if (url_params.network == "Origintrail Parachain Mainnet") {
+    if (data.network == "Origintrail Parachain Mainnet") {
         network = "otp::mainnet"
     }
 
