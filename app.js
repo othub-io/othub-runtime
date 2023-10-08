@@ -52,7 +52,6 @@ const assetHistoryRouter = require('./routes/asset/getHistory')
 //user
 const registerRouter = require('./routes/users/register')
 const signRouter = require('./routes/users/sign')
-const testRouter = require('./routes/users/test')
 
 app.use('/home', homeRouter)
 app.use('/nodes', nodesRouter)
@@ -89,7 +88,6 @@ app.use('/asset/getHistory', assetHistoryRouter)
 //asset
 app.use('/users/register', registerRouter)
 app.use('/users/sign', signRouter)
-app.use('/users/test', testRouter)
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
