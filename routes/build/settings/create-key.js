@@ -47,7 +47,7 @@ function randomWord(length) {
     return result;
 }
 
-router.get("/", web3passport.authenticate('jwt', { session: false }), async function (req, res, next) {
+router.post("/", web3passport.authenticate('jwt', { session: false }), async function (req, res, next) {
     ip = req.socket.remoteAddress;
     if (process.env.SSL_KEY_PATH) {
         ip = req.headers["x-forwarded-for"];

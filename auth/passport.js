@@ -46,7 +46,6 @@ opts.secretOrKey = process.env.JWT_SECRET;
             console.error('Error retrieving data:', error)
             })
 
-            console.log(`QUERY RES: ${JSON.stringify(user_record)}`)
             if (user_record) return done(null, user_record);
             return done(null, false);
     })

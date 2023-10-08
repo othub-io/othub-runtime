@@ -49,7 +49,7 @@ async function getOTPData(query, params, network) {
 }
 
 /* GET explore page. */
-router.get("/", async function (req, res, next) {
+router.post("/", async function (req, res, next) {
   ip = req.socket.remoteAddress;
   if (process.env.SSL_KEY_PATH) {
     ip = req.headers["x-forwarded-for"];

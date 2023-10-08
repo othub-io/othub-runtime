@@ -2,7 +2,7 @@ require("dotenv").config();
 var express = require("express");
 var router = express.Router();
 const mysql = require("mysql");
-const web3passport = require('../../auth/passport');
+const web3passport = require('../../../auth/passport');
 const othubdb_connection = mysql.createConnection({
   host: process.env.DBHOST,
   user: process.env.DBUSER,
@@ -47,7 +47,7 @@ function randomWord(length) {
   return result;
 }
 
-router.get("/", web3passport.authenticate('jwt', { session: false }), async function (req, res, next) {
+router.post("/", web3passport.authenticate('jwt', { session: false }), async function (req, res, next) {
   ip = req.socket.remoteAddress;
     if (process.env.SSL_KEY_PATH) {
         ip = req.headers["x-forwarded-for"];

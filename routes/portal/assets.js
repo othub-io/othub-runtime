@@ -50,7 +50,7 @@ async function getOTPData(query, params, network) {
 }
 
 /* GET explore page. */
-router.get("/", async function (req, res, next) {
+router.post("/", async function (req, res, next) {
   ip = req.socket.remoteAddress;
   if (process.env.SSL_KEY_PATH) {
     ip = req.headers["x-forwarded-for"];
@@ -82,9 +82,9 @@ router.get("/", async function (req, res, next) {
     params.push(nodeId);
   }
 
-  if (data.publisher) {
+  if (data.creator) {
     conditions.push(`publisher = ?`);
-    params.push(data.publisher);
+    params.push(data.creator);
   }
 
   order_by = "block_ts_hour";

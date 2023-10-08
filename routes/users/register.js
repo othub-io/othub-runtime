@@ -10,13 +10,6 @@ const othubdb_connection = mysql.createConnection({
   database: process.env.OTHUB_DB
 })
 
-const otp_connection = mysql.createConnection({
-  host: process.env.DBHOST,
-  user: process.env.DBUSER,
-  password: process.env.DBPASSWORD,
-  database: process.env.SYNC_DB
-})
-
 function executeOTHubQuery (query, params) {
   return new Promise((resolve, reject) => {
     othubdb_connection.query(query, params, (error, results) => {
@@ -39,7 +32,7 @@ async function getOTHubData (query, params) {
   }
 }
 
-router.get('/', async function (req, res, next) {
+router.post('/', async function (req, res, next) {
   ip = req.socket.remoteAddress
   if (process.env.SSL_KEY_PATH) {
     ip = req.headers['x-forwarded-for']

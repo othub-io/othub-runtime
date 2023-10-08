@@ -33,7 +33,7 @@ async function getOTHubData(query, params) {
 }
 
 /* GET explore page. */
-router.get("/", web3passport.authenticate('jwt', { session: false }), async function (req, res, next) {
+router.post("/", web3passport.authenticate('jwt', { session: false }), async function (req, res, next) {
     try {
         ip = req.socket.remoteAddress;
         if (process.env.SSL_KEY_PATH) {
@@ -149,7 +149,7 @@ router.get("/", web3passport.authenticate('jwt', { session: false }), async func
         }
 
         query = `SELECT DISTINCT app_name FROM app_header WHERE public_address = ? order by app_name asc`;
-        params = [data.account];
+        params = [req.user[0].public_address];
         appNames = await getOTHubData(query, params)
             .then((results) => {
                 //console.log('Query results:', results);
@@ -196,7 +196,7 @@ router.get("/", web3passport.authenticate('jwt', { session: false }), async func
                 console.error("Error retrieving data:", error);
             });
 
-        console.log(`Visitor:${data.account} filtered txns.`);
+        console.log(`Visitor:${req.user[0].public_address} filtered txns.`);
         res.json({
             appNames: appNames,
             appRecords: appRecords,
