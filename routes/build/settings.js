@@ -95,7 +95,7 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
       network = "otp::mainnet"
     }
 
-  query = `SELECT * FROM txn_header WHERE app_name = ? AND network = ?`;
+  query = `SELECT * FROM txn_header WHERE app_name = ? AND network = ? order by created_at desc`;
   params = [app_name, network];
   app_txns = await getData(query, params)
     .then((results) => {
