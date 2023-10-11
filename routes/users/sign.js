@@ -56,7 +56,7 @@ router.post("/", async function (req, res, next) {
 
   // Get user from db
   if (user_record) {
-    const msg = `Nonce: ${user_record[0].nonce}`;
+    const msg = `Please sign nonce ${user_record[0].nonce} to authenticate account ownership.`;
     // Convert msg to hex string
     const msgHex = ethUtil.bufferToHex(Buffer.from(msg));
 
