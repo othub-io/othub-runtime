@@ -3,7 +3,9 @@ var express = require("express");
 var router = express.Router();
 const keccak256 = require("keccak256");
 const mysql = require("mysql");
-const web3passport = require('../../auth/passport');
+const { Telegraf } = require("telegraf");
+const axios = require("axios");
+const web3passport = require("../../auth/passport");
 
 const othubdb_connection = mysql.createConnection({
   host: process.env.DBHOST,
