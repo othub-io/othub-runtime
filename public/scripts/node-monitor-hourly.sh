@@ -24,7 +24,6 @@ check_wins() {
   ATTEMPTS=$(journalctl -u otnode --since "1 hour ago" | grep "Service agreement bid:" | wc -l)
   WIN=$(curl --header "Content-Type: application/json" "X-API-Key: $API_KEY" --request POST --data "{nodeId: $NODE_ID}" "https://api.othub.io/otp/v_nodes_stats_last" | jq -r '.[0].pubsCommited1stEpochOnly')
   NETWORKPUBS=$(curl --header "Content-Type: application/json" "X-API-Key: $API_KEY" --request POST "https://api.othub.io/otp/v_pubs_stats_last" | jq -r '.[0].totalPubs')
-
   hourlypubs+=" $HOSTNAME won $WIN/$ATTEMPTS attempts with $NETWORKPUBS network pubs"
 }
 
@@ -32,8 +31,7 @@ check_wins() {
 check_error() {
   logs=$(journalctl -u otnode --since '1 hour ago' | grep 'ERROR')
   if [[ -n "$logs" ]]; then
-    systemctl restart otnode
-    messages+=" Otnode service has been restarted. ERROR has been detected on $HOSTNAME: $logs"
+    messages+="ERROR has been detected on $HOSTNAME: $logs"
   fi
 }
 
