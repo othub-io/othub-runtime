@@ -22,8 +22,8 @@ check_storage() {
 
 check_wins() {
   ATTEMPTS=$(journalctl -u otnode --since "1 hour ago" | grep "Service agreement bid:" | wc -l)
-  WIN=$(curl --header "Content-Type: application/json" "X-API-Key: $API_KEY" --request POST --data "{nodeId: $NODE_ID}" "https://api.othub.io/otp/v_nodes_stats_last" | jq -r '.[0].pubsCommited1stEpochOnly')
-  NETWORKPUBS=$(curl --header "Content-Type: application/json" "X-API-Key: $API_KEY" --request POST "https://api.othub.io/otp/v_pubs_stats_last" | jq -r '.[0].totalPubs')
+  WIN=$(curl --header "Content-Type: application/json" -H "x-api-key: $API_KEY" --request POST --data "{\"nodeId\": $NODE_ID}" "https://api.othub.io/otp/v_nodes_stats_last" | jq -r '.data[0].pubsCommited1stEpochOnly')
+  NETWORKPUBS=$(curl --header "Content-Type: application/json" -H "x-api-key: $API_KEY" --request POST "https://api.othub.io/otp/v_pubs_stats_last" | jq -r '.data[0].totalPubs')
   hourlypubs+=" $HOSTNAME won $WIN/$ATTEMPTS attempts with $NETWORKPUBS network pubs"
 }
 
