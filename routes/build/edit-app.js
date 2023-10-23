@@ -2,7 +2,7 @@ require("dotenv").config();
 var express = require("express");
 var router = express.Router();
 const mysql = require("mysql");
-const web3passport = require('../../../auth/passport');
+const web3passport = require('../../auth/passport');
 const othubdb_connection = mysql.createConnection({
     host: process.env.DBHOST,
     user: process.env.DBUSER,
@@ -43,42 +43,54 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
     data = req.body;
     public_address = req.user[0].public_address;
     app_name = data.app_name;
-    delete_key = data.delete_key;
     msg = ``
     keyRecords = [];
 
-    console.log(`Visitor:${public_address} is deleting api key ${delete_key}.`);
+    console.log(`Visitor:${public_address} is editing app ${app_name}.`);
 
-    query = `SELECT * FROM app_header WHERE api_key = ?`;
-    params = [delete_key];
-    app = await getData(query, params)
-        .then((results) => {
-            //console.log('Query results:', results);
-            return results;
-            // Use the results in your variable or perform further operations
-        })
-        .catch((error) => {
-            console.error("Error retrieving data:", error);
-        });
+    if (data.app_description && data.app_description !== '') {
+        query = `UPDATE app_header SET app_description = ? WHERE app_name = ?`;
+        await othubdb_connection.query(
+            query,
+            [data.app_description, app_name],
+            function (error, results, fields) {
+                if (error) throw error;
+            }
+        );
+    }
 
-        console.log(app)
-    query = `DELETE FROM app_header WHERE api_key = ?`;
-    await othubdb_connection.query(
-        query,
-        [delete_key],
-        function (error, results, fields) {
-            if (error) throw error;
-        }
-    );
+    if (data.built_by && data.built_by !== '') {
+        query = `UPDATE app_header SET built_by = ? WHERE app_name = ?`;
+        await othubdb_connection.query(
+            query,
+            [data.built_by, app_name],
+            function (error, results, fields) {
+                if (error) throw error;
+            }
+        );
+    }
 
-    query = `DELETE FROM txn_header WHERE api_key = ?`;
-    await othubdb_connection.query(
-        query,
-        [delete_key],
-        function (error, results, fields) {
-            if (error) throw error;
-        }
-    );
+    if (data.website && data.website !== '') {
+        query = `UPDATE app_header SET website = ? WHERE app_name = ?`;
+        await othubdb_connection.query(
+            query,
+            [data.website, app_name],
+            function (error, results, fields) {
+                if (error) throw error;
+            }
+        );
+    }
+
+    if (data.github && data.github !== '') {
+        query = `UPDATE app_header SET github = ? WHERE app_name = ?`;
+        await othubdb_connection.query(
+            query,
+            [data.github, app_name],
+            function (error, results, fields) {
+                if (error) throw error;
+            }
+        );
+    }
 
     query = `SELECT DISTINCT app_name FROM app_header WHERE public_address = ? order by app_name asc`;
     params = [public_address];
@@ -91,20 +103,6 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
         .catch((error) => {
             console.error("Error retrieving data:", error);
         });
-
-
-    if (!appNames) {
-        app_name = ''
-    }
-
-    if (appNames && appNames.some((obj) => obj.app_name != app[0].app_name)) {
-        app_name = appNames[0].app_name
-    }
-
-    if (appNames && appNames.some((obj) => obj.app_name === app[0].app_name)) {
-        app_name = app[0].app_name
-    }
-
 
     query = `SELECT * FROM app_header WHERE app_name = ?`;
     params = [app_name];
@@ -169,12 +167,11 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
             console.error("Error retrieving data:", error);
         });
 
-    console.log(`Visitor:${public_address} deleted api key ${delete_key}.`);
+    console.log(`Visitor:${public_address} deleted app ${app_name}.`);
     res.json({
         appNames: appNames,
         appRecords: appRecords,
         keyRecords: keyRecords,
-        public_address: public_address,
         app_txns: app_txns,
         users: users,
         assets: assets,
