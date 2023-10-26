@@ -44,7 +44,11 @@ const createKeyRouter = require('./routes/build/create-key')
 const deleteKeyRouter = require('./routes/build/delete-key')
 
 //charts
-const aseetsMintedRouter = require('./routes/charts/assetsMinted')
+const assetsMintedRouter = require('./routes/charts/assetsMinted')
+const earningsRouter = require('./routes/charts/earnings')
+const cumGraphRouter = require('./routes/charts/cumGraph')
+const nodeStakeRouter = require('./routes/charts/nodeStake')
+
 
 //images
 const imagesRouter = require('./routes/images')
@@ -83,7 +87,10 @@ app.use('/inventory', inventoryRouter)
 app.use('/staking', stakingRouter)
 
 //charts
-app.use('/charts/assetsMinted', aseetsMintedRouter)
+app.use('/charts/assetsMinted', assetsMintedRouter)
+app.use('/charts/earnings', earningsRouter)
+app.use('/charts/cumGraph', cumGraphRouter)
+app.use('/charts/nodeStake', nodeStakeRouter)
 
 //images
 app.use('/images', imagesRouter)

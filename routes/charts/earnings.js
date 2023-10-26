@@ -20,7 +20,6 @@ function executeOTPQuery(query, params,network ) {
   return new Promise((resolve, reject) => {
     if (network == "Origintrail Parachain Testnet") {
       otp_testnet_connection.query(query, params, (error, results) => {
-        console.log('made to testnet')
           if (error) {
             reject(error);
           } else {
@@ -60,39 +59,49 @@ router.post("/", async function (req, res, next) {
   timeframe = req.body.timeframe;
   network = req.body.network;
 
-  console.log(network)
-  query = `SELECT date, totalPubs, totalTracSpent, avgPubSize, avgPubPrice, avgBid, privatePubsPercentage, avgEpochsNumber
-  FROM v_pubs_stats_monthly
-  order by date`;
+  query = `select * from v_chart_earnings_payouts_monthly`;
   if (timeframe == "24h") {
-    query = `SELECT datetime as date, totalPubs, totalTracSpent, avgPubSize, avgPubPrice, avgBid, privatePubsPercentage, avgEpochsNumber
-    FROM v_pubs_stats_hourly
-    where datetime >= (select DATE_ADD(block_ts, interval -24 HOUR) as t from v_sys_staging_date)
-    order by datetime`
+    query = `SELECT datetime as date, estimatedEarnings1stEpochOnly, estimatedEarnings2plusEpochs, payouts
+    FROM (
+        SELECT datetime, estimatedEarnings1stEpochOnly, estimatedEarnings2plusEpochs, payouts
+        FROM v_chart_earnings_payouts_hourly
+        ORDER BY datetime DESC
+        LIMIT 24
+    ) AS records
+    ORDER BY datetime ASC`;
   }
   if (timeframe == "7d") {
-    query = `SELECT datetime as date, totalPubs, totalTracSpent, avgPubSize, avgPubPrice, avgBid, privatePubsPercentage, avgEpochsNumber
-    FROM v_pubs_stats_hourly
-    where datetime >= (select DATE_ADD(block_ts, interval -168 HOUR) as t from v_sys_staging_date)
-    order by datetime`
+    query = `SELECT datetime as date, estimatedEarnings1stEpochOnly, estimatedEarnings2plusEpochs, payouts
+    FROM (
+        SELECT datetime, estimatedEarnings1stEpochOnly, estimatedEarnings2plusEpochs, payouts
+        FROM v_chart_earnings_payouts_hourly
+        ORDER BY datetime DESC
+        LIMIT 168
+    ) AS records
+    ORDER BY datetime ASC`;
   }
   if (timeframe == "30d") {
-    query = `SELECT date, totalPubs, totalTracSpent , avgPubSize, avgPubPrice, avgBid, privatePubsPercentage, avgEpochsNumber
-    FROM v_pubs_stats 
-    where date >= (select cast(DATE_ADD(block_ts, interval -1 MONTH) as date) as t from v_sys_staging_date)
-    order by date`
+    query = `SELECT date, estimatedEarnings1stEpochOnly, estimatedEarnings2plusEpochs, payouts
+    FROM (
+        SELECT date, estimatedEarnings1stEpochOnly, estimatedEarnings2plusEpochs, payouts
+        FROM v_chart_earnings_payouts_daily
+        ORDER BY date DESC
+        LIMIT 30
+    ) AS records
+    ORDER BY date ASC`;
   }
   if (timeframe == "6m") {
-    query = `SELECT date, totalPubs, totalTracSpent , avgPubSize, avgPubPrice, avgBid, privatePubsPercentage, avgEpochsNumber
-    FROM v_pubs_stats 
-    where date >= (select cast(DATE_ADD(block_ts, interval -6 MONTH) as date) as t from v_sys_staging_date)
-    order by date`
+    query = `SELECT date, estimatedEarnings1stEpochOnly, estimatedEarnings2plusEpochs, payouts
+    FROM (
+        SELECT date, estimatedEarnings1stEpochOnly, estimatedEarnings2plusEpochs, payouts
+        FROM v_chart_earnings_payouts_daily
+        ORDER BY date DESC
+        LIMIT 182
+    ) AS records
+    ORDER BY date ASC`;
   }
   if (timeframe == "1y") {
-    query = `SELECT date, totalPubs, totalTracSpent , avgPubSize, avgPubPrice, avgBid, privatePubsPercentage, avgEpochsNumber
-    FROM v_pubs_stats_monthly 
-    where date >= (select cast(DATE_ADD(block_ts, interval -12 MONTH) as date) as t from v_sys_staging_date)
-    order by date`
+    query = `select * from v_chart_earnings_payouts_monthly LIMIT 12`
   }
 
   params = [];
