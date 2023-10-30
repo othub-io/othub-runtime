@@ -18,9 +18,8 @@ const otp_testnet_connection = mysql.createConnection({
 
 function executeOTPQuery(query, params,network ) {
   return new Promise((resolve, reject) => {
-    if (network == "Origintrail Parachain Testnet") {
+    if (network === "Origintrail Parachain Testnet") {
       otp_testnet_connection.query(query, params, (error, results) => {
-        console.log('made to testnet')
           if (error) {
             reject(error);
           } else {
@@ -28,7 +27,7 @@ function executeOTPQuery(query, params,network ) {
           }
         });
     }
-    if (network == "Origintrail Parachain Mainnet") {
+    if (network === "Origintrail Parachain Mainnet") {
       otp_connection.query(query, params, (error, results) => {
           if (error) {
             reject(error);
@@ -60,7 +59,6 @@ router.post("/", async function (req, res, next) {
   timeframe = req.body.timeframe;
   network = req.body.network;
 
-  console.log(network)
   query = `SELECT date, totalPubs, totalTracSpent, avgPubSize, avgPubPrice, avgBid, privatePubsPercentage, avgEpochsNumber
   FROM v_pubs_stats_monthly
   order by date`;

@@ -59,21 +59,29 @@ router.post("/", async function (req, res, next) {
   timeframe = req.body.timeframe;
   network = req.body.network;
 
-  query = `SELECT date, sum(nodeStake) as stake FROM v_nodes_stake group by date order by date asc`;
-  if (timeframe == "24h") {
-    query = `SELECT date, sum(nodeStake) as stake FROM v_nodes_stake group by date order by date asc LIMIT 1`;
-  }
-  if (timeframe == "7d") {
-    query = `SELECT date, sum(nodeStake) as stake FROM v_nodes_stake group by date order by date asc LIMIT 7`;
-  }
+  query = `SELECT date, nodesStake, nodesWithMoreThan50kStake, nodesWithLessThan50kStake FROM v_chart_node_stake_count_monthly order by date asc`;
   if (timeframe == "30d") {
-    query = `SELECT date, sum(nodeStake) as stake FROM v_nodes_stake group by date order by date asc LIMIT 30`;
+    query = `SELECT date, nodesStake, nodesWithMoreThan50kStake, nodesWithLessThan50kStake
+    FROM (
+        SELECT date, nodesStake, nodesWithMoreThan50kStake, nodesWithLessThan50kStake 
+        FROM v_chart_node_stake_count_daily 
+        order by date desc 
+        LIMIT 30
+    ) AS stake
+    ORDER BY date asc;`;
   }
   if (timeframe == "6m") {
-    query = `SELECT date, sum(nodeStake) as stake FROM v_nodes_stake group by date order by date asc LIMIT 182`;
+    query = `SELECT date, nodesStake, nodesWithMoreThan50kStake, nodesWithLessThan50kStake
+    FROM (
+        SELECT date, nodesStake, nodesWithMoreThan50kStake, nodesWithLessThan50kStake 
+        FROM v_chart_node_stake_count_daily 
+        order by date desc 
+        LIMIT 182
+    ) AS stake
+    ORDER BY date asc;`;
   }
   if (timeframe == "1y") {
-    query = `SELECT date, sum(nodeStake) as stake FROM v_nodes_stake group by date order by date asc LIMIT 365`
+    query = `SELECT date, nodesStake, nodesWithMoreThan50kStake, nodesWithLessThan50kStake FROM v_chart_node_stake_count_monthly order by date asc LIMIT 365`
   }
 
   params = [];
