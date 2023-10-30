@@ -26,22 +26,29 @@ const nodesRouter = require('./routes/nodes')
 //const searchRouter = require('./routes/search')
 
 //portal
-const portalAssetsRouter = require('./routes/portal/assets')
-const portalGatewayRouter = require('./routes/portal/gateway')
-const appSettingsRouter = require('./routes/portal/app-settings')
-const inventoryRouter = require('./routes/portal/inventory')
+const portalAssetsRouter = require('./routes/assets')
+const portalGatewayRouter = require('./routes/portal')
+const appSettingsRouter = require('./routes/app-settings')
+const inventoryRouter = require('./routes/inventory')
 
 //staking
-const stakingSettingsRouter = require('./routes/staking/settings')
+const stakingRouter = require('./routes/staking')
 
 //build
-const buildSettingsRouter = require('./routes/build/settings')
-const createAppRouter = require('./routes/build/settings/create-app')
-const deleteAppRouter = require('./routes/build/settings/delete-app')
-const editAppRouter = require('./routes/build/settings/edit-app')
-const filterRouter = require('./routes/build/settings/filter')
-const createKeyRouter = require('./routes/build/settings/create-key')
-const deleteKeyRouter = require('./routes/build/settings/delete-key')
+const buildRouter = require('./routes/build/build')
+const createAppRouter = require('./routes/build/create-app')
+const deleteAppRouter = require('./routes/build/delete-app')
+const editAppRouter = require('./routes/build/edit-app')
+const filterRouter = require('./routes/build/filter')
+const createKeyRouter = require('./routes/build/create-key')
+const deleteKeyRouter = require('./routes/build/delete-key')
+
+//charts
+const assetsMintedRouter = require('./routes/charts/assetsMinted')
+const earningsRouter = require('./routes/charts/earnings')
+const cumGraphRouter = require('./routes/charts/cumGraph')
+const nodeStakeRouter = require('./routes/charts/nodeStake')
+
 
 //images
 const imagesRouter = require('./routes/images')
@@ -49,15 +56,15 @@ const imagesRouter = require('./routes/images')
 //asset
 const assetHistoryRouter = require('./routes/asset/getHistory')
 
-//user
-const registerRouter = require('./routes/users/register')
-const signRouter = require('./routes/users/sign')
+//auth
+const registerRouter = require('./routes/auth/register')
+const signRouter = require('./routes/auth/sign')
 
 app.use('/home', homeRouter)
 app.use('/nodes', nodesRouter)
 
 //build
-app.use('/build/settings', buildSettingsRouter)
+app.use('/build', buildRouter)
 app.use('/build/create-app', createAppRouter)
 app.use('/build/delete-app', deleteAppRouter)
 app.use('/build/edit-app', editAppRouter)
@@ -66,10 +73,10 @@ app.use('/build/create-key', createKeyRouter)
 app.use('/build/delete-key', deleteKeyRouter)
 
 //portal
-app.use('/portal/assets', portalAssetsRouter)
-app.use('/portal/gateway', portalGatewayRouter)
-app.use('/portal/app-settings', appSettingsRouter)
-app.use('/portal/inventory', inventoryRouter)
+app.use('/assets', portalAssetsRouter)
+app.use('/portal', portalGatewayRouter)
+app.use('/app-settings', appSettingsRouter)
+app.use('/inventory', inventoryRouter)
 
 //dkg
 //app.use('/dkg/get', getRouter)
@@ -77,7 +84,13 @@ app.use('/portal/inventory', inventoryRouter)
 //app.use('/search', searchRouter)
 
 //staking
-app.use('/staking/settings', stakingSettingsRouter)
+app.use('/staking', stakingRouter)
+
+//charts
+app.use('/charts/assetsMinted', assetsMintedRouter)
+app.use('/charts/earnings', earningsRouter)
+app.use('/charts/cumGraph', cumGraphRouter)
+app.use('/charts/nodeStake', nodeStakeRouter)
 
 //images
 app.use('/images', imagesRouter)
@@ -85,9 +98,9 @@ app.use('/images', imagesRouter)
 //asset
 app.use('/asset/getHistory', assetHistoryRouter)
 
-//asset
-app.use('/users/register', registerRouter)
-app.use('/users/sign', signRouter)
+//auth
+app.use('/auth/register', registerRouter)
+app.use('/auth/sign', signRouter)
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

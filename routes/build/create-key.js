@@ -2,84 +2,81 @@ require("dotenv").config();
 var express = require("express");
 var router = express.Router();
 const mysql = require("mysql");
-const web3passport = require('../../../auth/passport');
+const web3passport = require('../../auth/passport');
 const othubdb_connection = mysql.createConnection({
-  host: process.env.DBHOST,
-  user: process.env.DBUSER,
-  password: process.env.DBPASSWORD,
-  database: process.env.OTHUB_DB,
-  port: "3306",
-  insecureAuth: true,
+    host: process.env.DBHOST,
+    user: process.env.DBUSER,
+    password: process.env.DBPASSWORD,
+    database: process.env.OTHUB_DB,
+    port: "3306",
+    insecureAuth: true,
 });
 
 function executeQuery(query, params) {
-  return new Promise((resolve, reject) => {
-    othubdb_connection.query(query, params, (error, results) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve(results);
-      }
+    return new Promise((resolve, reject) => {
+        othubdb_connection.query(query, params, (error, results) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(results);
+            }
+        });
     });
-  });
 }
 
 async function getData(query, params) {
-  try {
-    const results = await executeQuery(query, params);
-    return results;
-  } catch (error) {
-    console.error("Error executing query:", error);
-    throw error;
-  }
+    try {
+        const results = await executeQuery(query, params);
+        return results;
+    } catch (error) {
+        console.error("Error executing query:", error);
+        throw error;
+    }
 }
 
 function randomWord(length) {
-  let result = "";
-  const characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  const charactersLength = characters.length;
+    let result = "";
+    const characters =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const charactersLength = characters.length;
 
-  for (let i = 0; i < length; ++i) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
+    for (let i = 0; i < length; ++i) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
 
-  return result;
+    return result;
 }
 
 router.post("/", web3passport.authenticate('jwt', { session: false }), async function (req, res, next) {
-  ip = req.socket.remoteAddress;
+    ip = req.socket.remoteAddress;
     if (process.env.SSL_KEY_PATH) {
         ip = req.headers["x-forwarded-for"];
     }
 
-  data = req.body;
-  public_address = req.user[0].public_address;
-  network = data.network;
-  app_name = data.app_name;
-  app_description = data.app_description;
-  website = data.website;
-  github = data.github;
-  built_by = data.built_by;
-  key_count = data.key_count;
-  ual = data.ual;
-  msg = ``
+    data = req.body;
+    public_address = req.user[0].public_address;
+    app_name = data.app_name;
+    key_count = data.key_count;
+    create_key = data.create_key;
+    msg = ``
+    keyRecords = [];
 
-  console.log(`Visitor:${public_address} is creating an app.`);
+    console.log(`Visitor:${public_address} is creating a key.`);
 
-  query = `SELECT DISTINCT app_name FROM app_header WHERE public_address = ? order by app_name asc`;
-  params = [public_address];
-  appNames = await getData(query, params)
-    .then((results) => {
-      //console.log('Query results:', results);
-      return results;
-      // Use the results in your variable or perform further operations
-    })
-    .catch((error) => {
-      console.error("Error retrieving data:", error);
-    });
+    query = `SELECT * FROM app_header WHERE app_name = ?`;
+    params = [app_name];
+    keyRecords = await getData(query, params)
+        .then((results) => {
+            //console.log('Query results:', results);
+            return results;
+            // Use the results in your variable or perform further operations
+        })
+        .catch((error) => {
+            console.error("Error retrieving data:", error);
+        });
 
-    if (appNames.length < 3) {
+    if ((Number(key_count) + Number(keyRecords.length) <= 5)) {
+        msg = `${key_count} keys are being created for ${app_name}`
         access = "Basic";
         for (i = 0; i < Number(key_count); i++) {
             api_key = await randomWord(Math.floor(25) + 5);
@@ -91,10 +88,10 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
                     public_address,
                     app_name,
                     access,
-                    app_description,
-                    website,
-                    github,
-                    built_by,
+                    keyRecords[0].app_description,
+                    keyRecords[0].website,
+                    keyRecords[0].github,
+                    keyRecords[0].built_by,
                     null,
                 ],
                 function (error, results, fields) {
@@ -102,12 +99,8 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
                 }
             );
         }
-        console.log(`Visitor:${public_address} created an app.`);
-        msg = `${app_name} has been created!`
     } else {
-        console.log(`Visitor:${public_address} tried creating an app but hit the limit.`);
-        msg = `You may only have 3 apps at a time.`
-        app_name = appNames[0].app_name
+        msg = `${app_name} already has the maximum key limit.`
     }
 
     query = `SELECT DISTINCT app_name FROM app_header WHERE public_address = ? order by app_name asc`;
@@ -122,9 +115,9 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
             console.error("Error retrieving data:", error);
         });
 
-    query = `SELECT * FROM app_header WHERE app_name = ? LIMIT 1`;
+    query = `SELECT * FROM app_header WHERE app_name = ?`;
     params = [app_name];
-    appRecords = await getData(query, params)
+    keyRecords = await getData(query, params)
         .then((results) => {
             //console.log('Query results:', results);
             return results;
@@ -134,9 +127,9 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
             console.error("Error retrieving data:", error);
         });
 
-    query = `SELECT * FROM app_header WHERE app_name = ?`;
+    query = `SELECT * FROM app_header WHERE app_name = ? LIMIT 1`;
     params = [app_name];
-    keyRecords = await getData(query, params)
+    appRecords = await getData(query, params)
         .then((results) => {
             //console.log('Query results:', results);
             return results;
@@ -185,18 +178,17 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
             console.error("Error retrieving data:", error);
         });
 
+    console.log(`Visitor:${public_address} created keys.`);
     res.json({
         appNames: appNames,
         appRecords: appRecords,
         keyRecords: keyRecords,
-        public_address: public_address,
         app_txns: app_txns,
         users: users,
         assets: assets,
-        msg: msg,
+        msg: ``,
     });
-
-  return;
+    return;
 });
 
 module.exports = router;

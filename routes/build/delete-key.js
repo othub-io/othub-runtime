@@ -2,7 +2,7 @@ require("dotenv").config();
 var express = require("express");
 var router = express.Router();
 const mysql = require("mysql");
-const web3passport = require('../../../auth/passport');
+const web3passport = require('../../auth/passport');
 const othubdb_connection = mysql.createConnection({
     host: process.env.DBHOST,
     user: process.env.DBUSER,
@@ -43,24 +43,38 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
     data = req.body;
     public_address = req.user[0].public_address;
     app_name = data.app_name;
+    delete_key = data.delete_key;
     msg = ``
     keyRecords = [];
 
-    console.log(`Visitor:${public_address} is deleting app ${app_name}.`);
+    console.log(`Visitor:${public_address} is deleting api key ${delete_key}.`);
 
-    query = `DELETE FROM app_header WHERE app_name = ?`;
+    query = `SELECT * FROM app_header WHERE api_key = ?`;
+    params = [delete_key];
+    app = await getData(query, params)
+        .then((results) => {
+            //console.log('Query results:', results);
+            return results;
+            // Use the results in your variable or perform further operations
+        })
+        .catch((error) => {
+            console.error("Error retrieving data:", error);
+        });
+
+        console.log(app)
+    query = `DELETE FROM app_header WHERE api_key = ?`;
     await othubdb_connection.query(
         query,
-        [app_name],
+        [delete_key],
         function (error, results, fields) {
             if (error) throw error;
         }
     );
 
-    query = `DELETE FROM txn_header WHERE app_name = ?`;
+    query = `DELETE FROM txn_header WHERE api_key = ?`;
     await othubdb_connection.query(
         query,
-        [app_name],
+        [delete_key],
         function (error, results, fields) {
             if (error) throw error;
         }
@@ -78,17 +92,6 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
             console.error("Error retrieving data:", error);
         });
 
-    query = `SELECT * FROM app_header WHERE public_address = ?`;
-    params = [public_address];
-    app = await getData(query, params)
-        .then((results) => {
-            //console.log('Query results:', results);
-            return results;
-            // Use the results in your variable or perform further operations
-        })
-        .catch((error) => {
-            console.error("Error retrieving data:", error);
-        });
 
     if (!appNames) {
         app_name = ''
@@ -101,6 +104,7 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
     if (appNames && appNames.some((obj) => obj.app_name === app[0].app_name)) {
         app_name = app[0].app_name
     }
+
 
     query = `SELECT * FROM app_header WHERE app_name = ?`;
     params = [app_name];
@@ -165,11 +169,12 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
             console.error("Error retrieving data:", error);
         });
 
-    console.log(`Visitor:${public_address} deleted app ${app_name}.`);
+    console.log(`Visitor:${public_address} deleted api key ${delete_key}.`);
     res.json({
         appNames: appNames,
         appRecords: appRecords,
         keyRecords: keyRecords,
+        public_address: public_address,
         app_txns: app_txns,
         users: users,
         assets: assets,

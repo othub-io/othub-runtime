@@ -6,41 +6,60 @@ const otp_connection = mysql.createConnection({
   host: process.env.DBHOST,
   user: process.env.DBUSER,
   password: process.env.DBPASSWORD,
-  database: process.env.SYNC_DB
-})
+  database: process.env.SYNC_DB,
+});
 
-function executeOTPQuery (query, params) {
+const otp_testnet_connection = mysql.createConnection({
+  host: process.env.DBHOST,
+  user: process.env.DBUSER,
+  password: process.env.DBPASSWORD,
+  database: process.env.SYNC_DB_TESTNET,
+});
+
+function executeOTPQuery(query, params,network ) {
   return new Promise((resolve, reject) => {
-    otp_connection.query(query, params, (error, results) => {
-      if (error) {
-        reject(error)
-      } else {
-        resolve(results)
-      }
-    })
-  })
+    if (network == "Origintrail Parachain Testnet") {
+      otp_testnet_connection.query(query, params, (error, results) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(results);
+          }
+        });
+    }
+    if (network == "Origintrail Parachain Mainnet") {
+      otp_connection.query(query, params, (error, results) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(results);
+          }
+        });
+    }
+  });
 }
 
-async function getOTPData (query, params) {
+async function getOTPData(query, params, network) {
   try {
-    const results = await executeOTPQuery(query, params)
-    return results
+    const results = await executeOTPQuery(query, params, network);
+    return results;
   } catch (error) {
-    console.error('Error executing query:', error)
-    throw error
+    console.error("Error executing query:", error);
+    throw error;
   }
 }
 
 /* GET explore page. */
-router.get('/', async function (req, res, next) {
+router.post('/', async function (req, res, next) {
   ip = req.socket.remoteAddress
   if (process.env.SSL_KEY_PATH) {
     ip = req.headers['x-forwarded-for']
   }
-
+  network = req.body.network;
+  
   query = `select * from v_nodes where nodeStake >= 50000 order by ? desc`
   params = ['stake']
-  v_nodes = await getOTPData(query, params)
+  v_nodes = await getOTPData(query, params, network)
     .then(results => {
       //console.log('Query results:', results);
       return results
@@ -52,7 +71,7 @@ router.get('/', async function (req, res, next) {
 
     query = `select count(*) as count from v_pubs order by block_date`
   params = []
-  pub_count = await getOTPData(query, params)
+  pub_count = await getOTPData(query, params, network)
     .then(results => {
       //console.log('Query results:', results);
       return results
@@ -66,7 +85,7 @@ router.get('/', async function (req, res, next) {
     where date != (select block_date from v_sys_staging_date)
     order by date`
     params = []
-    v_pubs_stats = await getOTPData(query, params)
+    v_pubs_stats = await getOTPData(query, params, network)
       .then(results => {
         //console.log('Query results:', results);
         return results
@@ -78,7 +97,7 @@ router.get('/', async function (req, res, next) {
 
     query = `select * from v_pubs_stats_last24h order by datetime`
     params = []
-    v_pubs_stats_last24h = await getOTPData(query, params)
+    v_pubs_stats_last24h = await getOTPData(query, params, network)
       .then(results => {
         //console.log('Query results:', results);
         return results

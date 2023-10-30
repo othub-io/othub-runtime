@@ -2,7 +2,7 @@ require("dotenv").config();
 var express = require("express");
 var router = express.Router();
 const mysql = require("mysql");
-const web3passport = require('../../auth/passport');
+const web3passport = require('../auth/passport');
 
 const otp_connection = mysql.createConnection({
   host: process.env.DBHOST,
