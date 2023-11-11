@@ -32,7 +32,10 @@ const appSettingsRouter = require('./routes/app-settings')
 const inventoryRouter = require('./routes/inventory')
 
 //staking
-const stakingRouter = require('./routes/staking')
+const stakingRouter = require('./routes/staking/staking')
+const stakingNodesRouter = require('./routes/staking/nodes')
+const stakingNodeStatsRouter = require('./routes/staking/nodeStats')
+const stakingNodeStakeRouter = require('./routes/staking/nodeStake')
 
 //build
 const buildRouter = require('./routes/build/build')
@@ -48,7 +51,6 @@ const assetsMintedRouter = require('./routes/charts/assetsMinted')
 const earningsRouter = require('./routes/charts/earnings')
 const cumGraphRouter = require('./routes/charts/cumGraph')
 const nodeStakeRouter = require('./routes/charts/nodeStake')
-
 
 //images
 const imagesRouter = require('./routes/images')
@@ -85,6 +87,9 @@ app.use('/inventory', inventoryRouter)
 
 //staking
 app.use('/staking', stakingRouter)
+app.use('/staking/nodes', stakingNodesRouter)
+app.use('/staking/nodeStats', stakingNodeStatsRouter)
+app.use('/staking/nodeStake', stakingNodeStakeRouter)
 
 //charts
 app.use('/charts/assetsMinted', assetsMintedRouter)

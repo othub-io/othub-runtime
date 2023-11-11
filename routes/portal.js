@@ -77,6 +77,7 @@ router.post(
         );
 
         enable_apps = JSON.parse(data.enable_apps);
+        console.log(enable_apps)
         for (const key in enable_apps) {
           const value = enable_apps[key];
           if (value === true) {
@@ -173,7 +174,6 @@ router.post(
       sqlQuery =
         query + " " + whereClause + ` order by ${order_by} desc LIMIT ${limit}`;
 
-      console.log(sqlQuery);
       txn_header = await getOTHubData(sqlQuery, params)
         .then((results) => {
           //console.log('Query results:', results);
@@ -204,9 +204,6 @@ router.post(
       sqlQuery =
         query + " " + whereClause + ` order by ${order_by} desc LIMIT ${limit}`;
 
-      console.log(sqlQuery)
-      console.log(conditions);
-      console.log(params)
       raw_txn_header = await getOTHubData(sqlQuery, params)
         .then((results) => {
           //console.log('Query results:', results);
