@@ -66,56 +66,39 @@ router.post("/", async function (req, res, next) {
   conditions = [];
   params = [];
 
-  query = `SELECT tokenName,date, pubsCommited,pubsCommited1stEpochOnly,cumulativePubsCommited,cumulativePubsCommited1stEpochOnly,estimatedEarnings,estimatedEarnings1stEpochOnly,cumulativeEstimatedEarnings,cumulativeEstimatedEarnings1stEpochOnly,payouts,cumulativePayouts
-  FROM v_nodes_stats_monthly`;
+  query = `SELECT tokenName,date, pubsCommited,pubsCommited1stEpochOnly,cumulativePubsCommited,cumulativePubsCommited1stEpochOnly,estimatedEarnings,estimatedEarnings1stEpochOnly,cumulativeEstimatedEarnings,cumulativeEstimatedEarnings1stEpochOnly,payouts,cumulativePayouts FROM v_nodes_stats_monthly`;
   order_by = `date`;
 
-  if (timeframe == "24h") {
-    query = `SELECT tokenName,datetime as date, pubsCommited,pubsCommited1stEpochOnly,cumulativePubsCommited,cumulativePubsCommited1stEpochOnly,estimatedEarnings,estimatedEarnings1stEpochOnly,cumulativeEstimatedEarnings,cumulativeEstimatedEarnings1stEpochOnly,payouts,cumulativePayouts
-    FROM v_nodes_stats_hourly_7d`;
-    conditions.push(`datetime >= ?`);
-    params.push(
-      `(select DATE_ADD(block_ts, interval -24 HOUR) as t from v_sys_staging_date)`
-    );
-  }
-
-  if (timeframe == "7d") {
-    query = `SELECT tokenName,datetime as date, pubsCommited,pubsCommited1stEpochOnly,cumulativePubsCommited,cumulativePubsCommited1stEpochOnly,estimatedEarnings,estimatedEarnings1stEpochOnly,cumulativeEstimatedEarnings,cumulativeEstimatedEarnings1stEpochOnly,payouts,cumulativePayouts
-    FROM v_nodes_stats_hourly_7d`;
-    conditions.push(`datetime >= ?`);
-    params.push(
-      `(select DATE_ADD(block_ts, interval -168 HOUR) as t from v_sys_staging_date)`
-    );
-  }
-
-  if (timeframe == "30d") {
-    query = `SELECT tokenName, date, pubsCommited,pubsCommited1stEpochOnly,cumulativePubsCommited,cumulativePubsCommited1stEpochOnly,estimatedEarnings,estimatedEarnings1stEpochOnly,cumulativeEstimatedEarnings,cumulativeEstimatedEarnings1stEpochOnly,payouts,cumulativePayouts
-    FROM v_nodes_stats`;
+  if (timeframe === "24h") {
+    query = `SELECT tokenName,datetime as date, pubsCommited,pubsCommited1stEpochOnly,cumulativePubsCommited,cumulativePubsCommited1stEpochOnly,estimatedEarnings,estimatedEarnings1stEpochOnly,cumulativeEstimatedEarnings,cumulativeEstimatedEarnings1stEpochOnly,payouts,cumulativePayouts FROM v_nodes_stats_hourly_7d`;
     conditions.push(`date >= ?`);
-    params.push(
-      `(select cast(DATE_ADD(block_ts, interval -1 MONTH) as date) as t from v_sys_staging_date)`
-    );
+    params.push('(select cast(DATE_ADD(block_ts, interval -24 HOUR) as date) as t from v_sys_staging_date)');
   }
 
-  if (timeframe == "6m") {
-    query = `SELECT tokenName,date, pubsCommited,pubsCommited1stEpochOnly,cumulativePubsCommited,cumulativePubsCommited1stEpochOnly,estimatedEarnings,estimatedEarnings1stEpochOnly,cumulativeEstimatedEarnings,cumulativeEstimatedEarnings1stEpochOnly,payouts,cumulativePayouts
-    FROM v_nodes_stats`;
+  if (timeframe === "7d") {
+    query = `SELECT tokenName,datetime as date, pubsCommited,pubsCommited1stEpochOnly,cumulativePubsCommited,cumulativePubsCommited1stEpochOnly,estimatedEarnings,estimatedEarnings1stEpochOnly,cumulativeEstimatedEarnings,cumulativeEstimatedEarnings1stEpochOnly,payouts,cumulativePayouts FROM v_nodes_stats_hourly_7d`;
     conditions.push(`date >= ?`);
-    params.push(
-      `(select cast(DATE_ADD(block_ts, interval -6 MONTH) as date) as t from v_sys_staging_date)`
-    );
+    params.push('(select cast(DATE_ADD(block_ts, interval -168 HOUR) as date) as t from v_sys_staging_date)');
   }
 
-  if (timeframe == "1y") {
-    query = `SELECT tokenName,date, pubsCommited,pubsCommited1stEpochOnly,cumulativePubsCommited,cumulativePubsCommited1stEpochOnly,estimatedEarnings,estimatedEarnings1stEpochOnly,cumulativeEstimatedEarnings,cumulativeEstimatedEarnings1stEpochOnly,payouts,cumulativePayouts
-    FROM v_nodes_stats_monthly`;
+  if (timeframe === "30d") {
+    query = `SELECT tokenName, date, pubsCommited,pubsCommited1stEpochOnly,cumulativePubsCommited,cumulativePubsCommited1stEpochOnly,estimatedEarnings,estimatedEarnings1stEpochOnly,cumulativeEstimatedEarnings,cumulativeEstimatedEarnings1stEpochOnly,payouts,cumulativePayouts FROM v_nodes_stats`;
     conditions.push(`date >= ?`);
-    params.push(
-      `(select cast(DATE_ADD(block_ts, interval -12 MONTH) as date) as t from v_sys_staging_date)`
-    );
+    params.push('(select cast(DATE_ADD(block_ts, interval -1 MONTH) as date) as t from v_sys_staging_date)');
   }
 
-  console.log(nodeId)
+  if (timeframe === "6m") {
+    query = `SELECT tokenName,date, pubsCommited,pubsCommited1stEpochOnly,cumulativePubsCommited,cumulativePubsCommited1stEpochOnly,estimatedEarnings,estimatedEarnings1stEpochOnly,cumulativeEstimatedEarnings,cumulativeEstimatedEarnings1stEpochOnly,payouts,cumulativePayouts FROM v_nodes_stats`;
+    conditions.push(`date >= ?`);
+    params.push(`(select cast(DATE_ADD(block_ts, interval -6 MONTH) as date) as t from v_sys_staging_date)`);
+  }
+
+  if (timeframe === "1y") {
+    query = `SELECT tokenName,date, pubsCommited,pubsCommited1stEpochOnly,cumulativePubsCommited,cumulativePubsCommited1stEpochOnly,estimatedEarnings,estimatedEarnings1stEpochOnly,cumulativeEstimatedEarnings,cumulativeEstimatedEarnings1stEpochOnly,payouts,cumulativePayouts FROM v_nodes_stats_monthly`;
+    conditions.push(`date >= ?`);
+    params.push('(select cast(DATE_ADD(block_ts, interval -12 MONTH) as date) as t from v_sys_staging_date)');
+  }
+
   if (nodeId !== "All") {
     conditions.push(`nodeId = ?`);
     params.push(nodeId);
