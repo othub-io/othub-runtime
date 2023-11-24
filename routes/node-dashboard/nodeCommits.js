@@ -57,57 +57,27 @@ router.post("/", async function (req, res, next) {
     ip = req.headers["x-forwarded-for"];
   }
 
-  console.log(req.body)
   nodeId = req.body.nodeId;
   public_address = req.body.public_address;
   timeframe = req.body.timeframe;
   network = req.body.network;
-  limit = "1000";
+  limit = "20";
   conditions = [];
-  params = [];
+  params = []
 
-  query = `SELECT * from v_nodes_stake_latest`;
-
-  console.log(nodeId)
-  if (nodeId !== "All") {
-    conditions.push(`nodeId = ?`);
-    params.push(nodeId);
-  } else {
-    keccak256hash = keccak256(public_address).toString("hex");
-    keccak256hash = "0x" + keccak256hash;
-    like_keccak256hash = "%" + keccak256hash + "%";
-
-    node_id_query = `select * from v_nodes where current_adminWallet_hashes like ?`;
-    node_id_params = [like_keccak256hash];
-    nodeIds = await getOTPData(node_id_query, node_id_params, network)
-      .then((results) => {
-        return results;
-      })
-      .catch((error) => {
-        console.error("Error retrieving data:", error);
-      });
-
-    prm = ''
-    console.log(nodeIds)
-    for (i = 0; i < Number(nodeIds.length); i++) {
-      prm = '?,' + prm
-      params.push(nodeIds[0].nodeId);
-    }
-
-    console.log(prm)
-    if(Number(nodeIds.length) != 0){
-      prm = prm.substring(0, prm.length - 1)
-      conditions.push(`nodeId in (${prm})`);
-    }
+  ques = ""
+  for(const nodeid of nodeId){
+    ques = ques +"?,"
+  }
+  ques = ques.substring(0, ques.length - 1);
+  
+  for(i = 0; i < Number(nodeId.length); i++){
+    params.push(nodeId[i])
   }
 
-  whereClause =
-    conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
-  sqlQuery =
-    query + " " + whereClause;
+  query = `select * from v_nodes_activity_last24h WHERE nodeId in (${ques}) order by datetime desc LIMIT ${limit}`;
 
-    console.log(sqlQuery)
-  data = await getOTPData(sqlQuery, params, network)
+  data = await getOTPData(query, params, network)
     .then((results) => {
       //console.log('Query results:', results);
       return results;
@@ -116,7 +86,6 @@ router.post("/", async function (req, res, next) {
     .catch((error) => {
       console.error("Error retrieving data:", error);
     });
-
 
   res.json({
     chart_data: data,

@@ -19,6 +19,7 @@ app.use(cors())
 //main
 const homeRouter = require('./routes/home')
 const nodesRouter = require('./routes/nodes')
+const activityFeedRouter = require('./routes/activityFeed')
 
 //dkg
 //const getRouter = require('./routes/dkg/get')
@@ -31,11 +32,13 @@ const portalGatewayRouter = require('./routes/portal')
 const appSettingsRouter = require('./routes/app-settings')
 const inventoryRouter = require('./routes/inventory')
 
-//staking
-const stakingRouter = require('./routes/staking/staking')
-const stakingNodesRouter = require('./routes/staking/nodes')
-const stakingNodeStatsRouter = require('./routes/staking/nodeStats')
-const stakingNodeStakeRouter = require('./routes/staking/nodeStake')
+//dashboard
+const dashboardNodesRouter = require('./routes/node-dashboard/nodes')
+const dashboardNodeStatsRouter = require('./routes/node-dashboard/nodeStats')
+const dashboardNodeStakeRouter = require('./routes/node-dashboard/nodeStake')
+const dashboardNodeCommitsRouter = require('./routes/node-dashboard/nodeCommits')
+const dashboardNodeSettingsRouter = require('./routes/node-dashboard/nodeSettings')
+
 
 //build
 const buildRouter = require('./routes/build/build')
@@ -64,6 +67,7 @@ const signRouter = require('./routes/auth/sign')
 
 app.use('/home', homeRouter)
 app.use('/nodes', nodesRouter)
+app.use('/activityFeed', activityFeedRouter)
 
 //build
 app.use('/build', buildRouter)
@@ -86,10 +90,11 @@ app.use('/inventory', inventoryRouter)
 //app.use('/search', searchRouter)
 
 //staking
-app.use('/staking', stakingRouter)
-app.use('/staking/nodes', stakingNodesRouter)
-app.use('/staking/nodeStats', stakingNodeStatsRouter)
-app.use('/staking/nodeStake', stakingNodeStakeRouter)
+app.use('/node-dashboard/nodes', dashboardNodesRouter)
+app.use('/node-dashboard/nodeStats', dashboardNodeStatsRouter)
+app.use('/node-dashboard/nodeStake', dashboardNodeStakeRouter)
+app.use('/node-dashboard/nodeCommits', dashboardNodeCommitsRouter)
+app.use('/node-dashboard/nodeSettings', dashboardNodeSettingsRouter)
 
 //charts
 app.use('/charts/assetsMinted', assetsMintedRouter)
