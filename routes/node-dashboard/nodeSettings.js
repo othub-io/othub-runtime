@@ -97,6 +97,8 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
     telegramID = data.telegramID;
     sendScript = data.sendScript;
 
+    console.log(telegramID)
+    console.log(botToken)
     nodeRecords = [];
     operatorRecord = [];
 
