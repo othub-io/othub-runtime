@@ -65,7 +65,7 @@ router.post("/", async function (req, res, next) {
   conditions = [];
   params = []
 
-  query = `select signer,UAL,datetime,tokenId,transactionHash,eventName,eventValue1 from v_pubs_activity_last1min UNION ALL select tokenSymbol,UAL,datetime,tokenId,transactionHash,eventName,eventValue1 from v_nodes_activity_last1min WHERE eventName != 'StakeIncreased' AND transactionHash != '' AND transactionHash is not null order by datetime desc LIMIT ${limit}`;
+  query = `select signer,UAL,datetime,tokenId,transactionHash,eventName,eventValue1 from v_pubs_activity_last1min WHERE transactionHash != '' AND transactionHash is not null AND signer != '' AND signer is not null UNION ALL select tokenSymbol,UAL,datetime,tokenId,transactionHash,eventName,eventValue1 from v_nodes_activity_last1min WHERE eventName != 'StakeIncreased' AND transactionHash != '' AND transactionHash is not null order by datetime desc LIMIT ${limit}`;
 
   data = await getOTPData(query, params, network)
     .then((results) => {
