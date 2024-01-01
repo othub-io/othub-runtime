@@ -1,55 +1,10 @@
 require("dotenv").config();
-var express = require("express");
-var router = express.Router();
-const mysql = require("mysql");
+const express = require("express");
+const router = express.Router();
 const web3passport = require('../auth/passport');
+const queryTypes = require('../util/queryTypes')
+const queryDB = queryTypes.queryDB()
 
-const otp_connection = mysql.createConnection({
-  host: process.env.DBHOST,
-  user: process.env.DBUSER,
-  password: process.env.DBPASSWORD,
-  database: process.env.SYNC_DB,
-});
-
-const otp_testnet_connection = mysql.createConnection({
-  host: process.env.DBHOST,
-  user: process.env.DBUSER,
-  password: process.env.DBPASSWORD,
-  database: process.env.SYNC_DB_TESTNET,
-});
-
-function executeOTPQuery(query, params, network) {
-  return new Promise((resolve, reject) => {
-    if (network == "Origintrail Parachain Testnet") {
-        otp_testnet_connection.query(query, params, (error, results) => {
-            if (error) {
-              reject(error);
-            } else {
-              resolve(results);
-            }
-          });
-      }
-      if (network == "Origintrail Parachain Mainnet") {
-        otp_connection.query(query, params, (error, results) => {
-            if (error) {
-              reject(error);
-            } else {
-              resolve(results);
-            }
-          });
-      }
-  });
-}
-
-async function getOTPData(query, params, network) {
-  try {
-    const results = await executeOTPQuery(query, params, network);
-    return results;
-  } catch (error) {
-    console.error("Error executing query:", error);
-    throw error;
-  }
-}
 
 /* GET explore page. */
 router.post("/", web3passport.authenticate('jwt', { session: false }), async function (req, res, next) {
@@ -58,25 +13,26 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
     ip = req.headers["x-forwarded-for"];
   }
 
-  data = req.body;
+  network = req.body.network;
+  blockchain = req.body.blockchain;
 
   query = `select * from v_pubs`;
   conditions = [];
   params = [];
 
   limit = 100;
-  if (data.limit && Number(data.limit)) {
+  if (req.body.limit && Number(req.body.limit)) {
     limit = data.limit;
   }
 
   order_by = "block_ts_hour";
-  if (data.order) {
-    order_by = data.order;
+  if (req.body.order) {
+    order_by = req.body.order;
   }
 
-  if (data.ual) {
+  if (req.body.ual) {
     conditions.push(`ual = ?`);
-    params.push(data.ual);
+    params.push(req.body.ual);
   }
 
   conditions.push(`owner = ?`);
@@ -88,7 +44,7 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
     query + " " + whereClause + ` order by ${order_by} desc LIMIT ${limit}`;
 
   v_pubs = "";
-  v_pubs = await getOTPData(sqlQuery, params, data.network)
+  v_pubs = await queryDB.getData(sqlQuery, params, network, blockchain)
     .then((results) => {
       //console.log('Query results:', results);
       return results;
@@ -97,10 +53,6 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
     .catch((error) => {
       console.error("Error retrieving data:", error);
     });
-
-  if (data.ual) {
-    console.log(v_pubs);
-  }
 
   res.json({
     v_pubs: v_pubs,

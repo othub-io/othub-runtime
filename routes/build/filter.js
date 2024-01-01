@@ -1,36 +1,9 @@
 require("dotenv").config();
-var express = require("express");
-var router = express.Router();
-const mysql = require("mysql");
+const express = require("express");
+const router = express.Router();
 const web3passport = require('../../auth/passport');
-const othubdb_connection = mysql.createConnection({
-    host: process.env.DBHOST,
-    user: process.env.DBUSER,
-    password: process.env.DBPASSWORD,
-    database: process.env.OTHUB_DB,
-});
-
-function executeOTHubQuery(query, params) {
-    return new Promise((resolve, reject) => {
-        othubdb_connection.query(query, params, (error, results) => {
-            if (error) {
-                reject(error);
-            } else {
-                resolve(results);
-            }
-        });
-    });
-}
-
-async function getOTHubData(query, params) {
-    try {
-        const results = await executeOTHubQuery(query, params);
-        return results;
-    } catch (error) {
-        console.error("Error executing query:", error);
-        throw error;
-    }
-}
+const queryTypes = require('../../util/queryTypes')
+const queryDB = queryTypes.queryDB()
 
 /* GET explore page. */
 router.post("/", web3passport.authenticate('jwt', { session: false }), async function (req, res, next) {
@@ -41,6 +14,7 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
         }
 
         data = req.body;
+        network = req.body.network
 
         query = `select * from txn_header`;
         conditions = [];
@@ -51,11 +25,12 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
             limit = data.limit;
         }
 
-        if (data.network == "Origintrail Parachain Testnet") {
+        if (network == "DKG Testnet") {
             conditions.push(`network = ?`);
             params.push("otp::testnet");
         }
-        if (data.network == "Origintrail Parachain Mainnet") {
+
+        if (network == "DKG Mainnet") {
             conditions.push(`network = ?`);
             params.push("otp::mainnet");
         }
@@ -129,9 +104,7 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
         sqlQuery =
             query + " " + whereClause + ` order by ${order_by} desc LIMIT ${limit}`;
 
-        console.log(sqlQuery);
-        console.log(params);
-        app_txns = await getOTHubData(sqlQuery, params)
+        app_txns = await queryDB.getData(sqlQuery, params, "", "othub_db")
             .then((results) => {
                 //console.log('Query results:', results);
                 return results;
@@ -150,7 +123,7 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
 
         query = `SELECT DISTINCT app_name FROM app_header WHERE public_address = ? order by app_name asc`;
         params = [req.user[0].public_address];
-        appNames = await getOTHubData(query, params)
+        appNames = await queryDB.getData(query, params, "", "othub_db")
             .then((results) => {
                 //console.log('Query results:', results);
                 return results;
@@ -162,7 +135,7 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
 
         query = `SELECT * FROM app_header WHERE app_name = ?`;
         params = [data.app_name];
-        keyRecords = await getOTHubData(query, params)
+        keyRecords = await queryDB.getData(query, params, "", "othub_db")
             .then((results) => {
                 //console.log('Query results:', results);
                 return results;
@@ -174,7 +147,7 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
 
         query = `SELECT * FROM app_header WHERE app_name = ? LIMIT 1`;
         params = [data.app_name];
-        appRecords = await getOTHubData(query, params)
+        appRecords = await queryDB.getData(query, params, "", "othub_db")
             .then((results) => {
                 //console.log('Query results:', results);
                 return results;
@@ -186,7 +159,7 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
 
         query = `select * from enabled_apps where app_name = ?`;
         params = [data.app_name];
-        users = await getOTHubData(query, params)
+        users = await queryDB.getData(query, params, "", "othub_db")
             .then((results) => {
                 //console.log('Query results:', results);
                 return results;

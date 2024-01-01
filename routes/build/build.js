@@ -1,38 +1,9 @@
 require("dotenv").config();
-var express = require("express");
-var router = express.Router();
-const mysql = require("mysql");
+const express = require("express");
+const router = express.Router();
 const web3passport = require('../../auth/passport');
-const othubdb_connection = mysql.createConnection({
-  host: process.env.DBHOST,
-  user: process.env.DBUSER,
-  password: process.env.DBPASSWORD,
-  database: process.env.OTHUB_DB,
-  port: "3306",
-  insecureAuth: true,
-});
-
-function executeQuery(query, params) {
-  return new Promise((resolve, reject) => {
-    othubdb_connection.query(query, params, (error, results) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve(results);
-      }
-    });
-  });
-}
-
-async function getData(query, params) {
-  try {
-    const results = await executeQuery(query, params);
-    return results;
-  } catch (error) {
-    console.error("Error executing query:", error);
-    throw error;
-  }
-}
+const queryTypes = require('../../util/queryTypes')
+const queryDB = queryTypes.queryDB()
 
 router.post("/", web3passport.authenticate('jwt', { session: false }), async function (req, res, next) {
   ip = req.socket.remoteAddress;
@@ -49,7 +20,8 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
 
   query = `SELECT DISTINCT app_name FROM app_header WHERE public_address = ? order by app_name asc`;
   params = [public_address];
-    appNames = await getData(query, params)
+    appNames = await queryDB
+    .getData(query, params, "", "othub_db")
     .then((results) => {
       //console.log('Query results:', results);
       return results;
@@ -65,7 +37,8 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
 
     query = `SELECT * FROM app_header WHERE app_name = ?`;
     params = [app_name];
-    keyRecords = await getData(query, params)
+    keyRecords = await queryDB
+    .getData(query, params, "", "othub_db")
         .then((results) => {
             //console.log('Query results:', results);
             return results;
@@ -77,7 +50,8 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
 
     query = `SELECT * FROM app_header WHERE app_name = ? LIMIT 1`;
     params = [app_name];
-    appRecords = await getData(query, params)
+    appRecords = await queryDB
+    .getData(query, params, "", "othub_db")
         .then((results) => {
             //console.log('Query results:', results);
             return results;
@@ -88,16 +62,17 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
         });
 
     network = ''
-    if (data.network == "Origintrail Parachain Testnet") {
+    if (data.network == "DKG Testnet") {
       network = "otp::testnet"
     }
-    if (data.network == "Origintrail Parachain Mainnet") {
+    if (data.network == "DKG Mainnet") {
       network = "otp::mainnet"
     }
 
   query = `SELECT * FROM txn_header WHERE app_name = ? AND network = ? order by created_at desc`;
   params = [app_name, network];
-  app_txns = await getData(query, params)
+  app_txns = await queryDB
+  .getData(query, params, "", "othub_db")
     .then((results) => {
       //console.log('Query results:', results);
       return results;
@@ -116,7 +91,8 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
 
     query = `select * from enabled_apps where app_name = ?`;
     params = [app_name];
-    users = await getData(query, params)
+    users = await queryDB
+    .getData(query, params, "", "othub_db")
       .then((results) => {
         //console.log('Query results:', results);
         return results;

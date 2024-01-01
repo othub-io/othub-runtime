@@ -20,6 +20,7 @@ app.use(cors())
 const homeRouter = require('./routes/home')
 const nodesRouter = require('./routes/nodes')
 const activityFeedRouter = require('./routes/activityFeed')
+const blockchainsRouter = require('./routes/blockchains')
 
 //dkg
 //const getRouter = require('./routes/dkg/get')
@@ -68,6 +69,8 @@ const signRouter = require('./routes/auth/sign')
 app.use('/home', homeRouter)
 app.use('/nodes', nodesRouter)
 app.use('/activityFeed', activityFeedRouter)
+app.use('/blockchains', blockchainsRouter)
+
 
 //build
 app.use('/build', buildRouter)

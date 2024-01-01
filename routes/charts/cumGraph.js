@@ -1,53 +1,8 @@
 require("dotenv").config();
-var express = require("express");
-var router = express.Router();
-const mysql = require("mysql");
-const otp_connection = mysql.createConnection({
-    host: process.env.DBHOST,
-    user: process.env.DBUSER,
-    password: process.env.DBPASSWORD,
-    database: process.env.SYNC_DB,
-  });
-  
-  const otp_testnet_connection = mysql.createConnection({
-    host: process.env.DBHOST,
-    user: process.env.DBUSER,
-    password: process.env.DBPASSWORD,
-    database: process.env.SYNC_DB_TESTNET,
-  });
-  
-  function executeOTPQuery(query, params,network ) {
-    return new Promise((resolve, reject) => {
-      if (network == "Origintrail Parachain Testnet") {
-        otp_testnet_connection.query(query, params, (error, results) => {
-            if (error) {
-              reject(error);
-            } else {
-              resolve(results);
-            }
-          });
-      }
-      if (network == "Origintrail Parachain Mainnet") {
-        otp_connection.query(query, params, (error, results) => {
-            if (error) {
-              reject(error);
-            } else {
-              resolve(results);
-            }
-          });
-      }
-    });
-  }
-
-  async function getOTPData(query, params, network) {
-    try {
-      const results = await executeOTPQuery(query, params, network);
-      return results;
-    } catch (error) {
-      console.error("Error executing query:", error);
-      throw error;
-    }
-  }
+const express = require("express");
+const router = express.Router();
+const queryTypes = require('../../util/queryTypes')
+const queryDB = queryTypes.queryDB()
 
 /* GET explore page. */
 router.post("/", async function (req, res, next) {
@@ -57,10 +12,23 @@ router.post("/", async function (req, res, next) {
   }
 
   timeframe = req.body.timeframe;
-  network = req.body.network;
+  network = "";
+  blockchain = "othub_db";
 
-  console.log(timeframe)
-  console.log(network)
+  query = `select * from blockchains where environment = ?`;
+  params = [network];
+  blockchains = await queryDB
+    .getData(query, params, network, blockchain)
+    .then((results) => {
+      //console.log('Query results:', results);
+      return results;
+      // Use the results in your variable or perform further operations
+    })
+    .catch((error) => {
+      console.error("Error retrieving data:", error);
+    });
+
+  network = req.body.network;
 
   limit = 5000
   if (timeframe == "24h") {
@@ -76,20 +44,32 @@ router.post("/", async function (req, res, next) {
     limit = 365
   }
 
-  query = `select * from v_chart_cum_total order by date LIMIT ${limit}`;
-  params = [];
-  data = await getOTPData(query, params, network)
-    .then((results) => {
-      //console.log('Query results:', results);
-      return results;
-      // Use the results in your variable or perform further operations
-    })
-    .catch((error) => {
-      console.error("Error retrieving data:", error);
-    });
+  let chart_data = [];
+
+  for (const blockchain of blockchains) {
+    query = `select * from v_chart_cum_total order by date LIMIT ${limit}`;
+    params = [];
+    data = await queryDB.getData(query, params, network, blockchain.chain_name)
+      .then((results) => {
+        //console.log('Query results:', results);
+        return results;
+        // Use the results in your variable or perform further operations
+      })
+      .catch((error) => {
+        console.error("Error retrieving data:", error);
+      });
+
+      chain_data = {
+        blockchain_name: blockchain.chain_name,
+        blockchain_id: blockchain.chain_id,
+        cum_total: data
+      };
+
+      chart_data.push(chain_data)
+  }
 
   res.json({
-    chart_data: data,
+    chart_data: chart_data,
   });
 });
 

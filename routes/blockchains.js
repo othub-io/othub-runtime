@@ -12,11 +12,13 @@ router.post('/', async function (req, res, next) {
   }
 
   network = req.body.network;
-  blockchain = req.body.blockchain;
+  blockchain = "othub_db"
 
-  query = `select * from v_nodes where nodeStake >= 50000 order by ? desc`
-  params = ['nodeStake']
-  v_nodes = await queryDB.getData(query, params, network, blockchain)
+  query = `select * from blockchains where environment = ?`
+  params = [network]
+
+  network = "";
+  blockchains = await queryDB.getData(query, params, network, blockchain)
     .then(results => {
       //console.log('Query results:', results);
       return results
@@ -27,7 +29,7 @@ router.post('/', async function (req, res, next) {
     })
 
   res.json({
-    v_nodes: v_nodes,
+    blockchains: blockchains,
     msg: ``
   })
 })

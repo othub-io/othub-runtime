@@ -1,53 +1,8 @@
 require("dotenv").config();
-var express = require("express");
-var router = express.Router();
-const mysql = require("mysql");
-const otp_connection = mysql.createConnection({
-  host: process.env.DBHOST,
-  user: process.env.DBUSER,
-  password: process.env.DBPASSWORD,
-  database: process.env.SYNC_DB,
-});
-
-const otp_testnet_connection = mysql.createConnection({
-  host: process.env.DBHOST,
-  user: process.env.DBUSER,
-  password: process.env.DBPASSWORD,
-  database: process.env.SYNC_DB_TESTNET,
-});
-
-function executeOTPQuery(query, params,network ) {
-  return new Promise((resolve, reject) => {
-    if (network == "Origintrail Parachain Testnet") {
-      otp_testnet_connection.query(query, params, (error, results) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(results);
-          }
-        });
-    }
-    if (network == "Origintrail Parachain Mainnet") {
-      otp_connection.query(query, params, (error, results) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(results);
-          }
-        });
-    }
-  });
-}
-
-async function getOTPData(query, params, network) {
-  try {
-    const results = await executeOTPQuery(query, params, network);
-    return results;
-  } catch (error) {
-    console.error("Error executing query:", error);
-    throw error;
-  }
-}
+const express = require("express");
+const router = express.Router();
+const queryTypes = require('../../util/queryTypes')
+const queryDB = queryTypes.queryDB()
 
 /* GET explore page. */
 router.post("/", async function (req, res, next) {
@@ -58,6 +13,7 @@ router.post("/", async function (req, res, next) {
 
   timeframe = req.body.timeframe;
   network = req.body.network;
+  blockchain = req.body.blockchain;
 
   query = `SELECT date, nodesStake, nodesWithMoreThan50kStake, nodesWithLessThan50kStake FROM v_chart_node_stake_count_monthly order by date asc`;
   if (timeframe == "30d") {
@@ -85,7 +41,7 @@ router.post("/", async function (req, res, next) {
   }
 
   params = [];
-  data = await getOTPData(query, params, network)
+  data = await queryDB.getData(query, params, network, blockchain)
     .then((results) => {
       //console.log('Query results:', results);
       return results;

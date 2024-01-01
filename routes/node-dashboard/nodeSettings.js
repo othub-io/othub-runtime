@@ -2,86 +2,11 @@ require("dotenv").config();
 var express = require("express");
 var router = express.Router();
 const keccak256 = require("keccak256");
-const mysql = require("mysql");
 const { Telegraf } = require("telegraf");
 const axios = require("axios");
 const web3passport = require("../../auth/passport");
-
-const othubdb_connection = mysql.createConnection({
-  host: process.env.DBHOST,
-  user: process.env.DBUSER,
-  password: process.env.DBPASSWORD,
-  database: process.env.OTHUB_DB,
-});
-
-const otp_connection = mysql.createConnection({
-  host: process.env.DBHOST,
-  user: process.env.DBUSER,
-  password: process.env.DBPASSWORD,
-  database: process.env.SYNC_DB,
-});
-
-const otp_testnet_connection = mysql.createConnection({
-  host: process.env.DBHOST,
-  user: process.env.DBUSER,
-  password: process.env.DBPASSWORD,
-  database: process.env.SYNC_DB_TESTNET,
-});
-
-function executeOTPQuery(query, params, network) {
-  return new Promise((resolve, reject) => {
-    if (network == "Origintrail Parachain Testnet") {
-        otp_testnet_connection.query(query, params, (error, results) => {
-            if (error) {
-              reject(error);
-            } else {
-              resolve(results);
-            }
-          });
-      }
-      if (network == "Origintrail Parachain Mainnet") {
-        otp_connection.query(query, params, (error, results) => {
-            if (error) {
-              reject(error);
-            } else {
-              resolve(results);
-            }
-          });
-      }
-  });
-}
-
-async function getOTPData(query, params, network) {
-  try {
-    const results = await executeOTPQuery(query, params, network);
-    return results;
-  } catch (error) {
-    console.error("Error executing query:", error);
-    throw error;
-  }
-}
-
-function executeOTHubQuery(query, params) {
-  return new Promise((resolve, reject) => {
-    othubdb_connection.query(query, params, (error, results) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve(results);
-      }
-    });
-  });
-}
-
-async function getOTHubData(query, params) {
-  try {
-    const results = await executeOTHubQuery(query, params);
-    return results;
-  } catch (error) {
-    console.error("Error executing query:", error);
-    throw error;
-  }
-}
+const queryTypes = require('../../util/queryTypes')
+const queryDB = queryTypes.queryDB()
 
 /* GET explore page. */
 router.post("/", web3passport.authenticate('jwt', { session: false }), async function (req, res, next) {
@@ -90,15 +15,13 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
       ip = req.headers["x-forwarded-for"];
     }
 
-    data = req.body;
     public_address = req.user[0].public_address;
-    network = data.network;
-    botToken = data.botToken;
-    telegramID = data.telegramID;
-    sendScript = data.sendScript;
+    network = req.body.network;
+    blockchain = "othub_db";
+    botToken = req.body.botToken;
+    telegramID = req.body.telegramID;
+    sendScript = req.body.sendScript;
 
-    console.log(telegramID)
-    console.log(botToken)
     nodeRecords = [];
     operatorRecord = [];
 
@@ -117,7 +40,7 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
 
     query = `select * from v_nodes where current_adminWallet_hashes like ?`;
     params = [like_keccak256hash];
-    nodeIds = await getOTPData(query, params, network)
+    nodeIds = await queryDB.getData(query, params, network, blockchain)
       .then((results) => {
         return results;
       })
@@ -153,21 +76,21 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
       );
     }
 
+    params = [public_address, telegramID, telegramID]
+    query = "INSERT INTO node_operators (public_address,telegramID) VALUES (?,?) ON DUPLICATE KEY UPDATE telegramID = ?";
     if (telegramID && telegramID.length <= 10 && Number(telegramID)) {
-      query =
-        "INSERT INTO node_operators (public_address,telegramID) VALUES (?,?) ON DUPLICATE KEY UPDATE telegramID = ?";
-      await othubdb_connection.query(
-        query,
-        [public_address, telegramID, telegramID],
-        function (error, results, fields) {
-          if (error) throw error;
-        }
-      );
+      await queryTypes.queryDB(query, params, network, blockchain)
+      .then((results) => {
+        return results;
+      })
+      .catch((error) => {
+        console.error("Error retrieving data:", error);
+      });
     }
 
     query = `select * from node_operators where public_address = ?`;
     params = [public_address];
-    operatorRecord = await getOTHubData(query, params)
+    operatorRecord = await queryTypes.queryDB(query, params, network, blockchain)
       .then((results) => {
         return results;
       })
@@ -212,7 +135,7 @@ echo -e "CHAT_ID="${operatorRecord[0].telegramID}" \nBOT_ID="${operatorRecord[0]
     for (i = 0; i < nodeIds.length; ++i) {
       query = `select * from v_nodes_stats where nodeId=? order by date desc LIMIT 1`;
       params = [nodeIds[i].nodeId];
-      node_stat = await getOTPData(query, params, network)
+      node_stat = await queryTypes.queryDB(query, params, network, blockchain)
         .then((results) => {
           return results;
         })

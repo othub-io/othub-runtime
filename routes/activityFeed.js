@@ -1,54 +1,8 @@
 require("dotenv").config();
-var express = require("express");
-var router = express.Router();
-const mysql = require("mysql");
-const keccak256 = require("keccak256");
-const otp_connection = mysql.createConnection({
-  host: process.env.DBHOST,
-  user: process.env.DBUSER,
-  password: process.env.DBPASSWORD,
-  database: process.env.SYNC_DB,
-});
-
-const otp_testnet_connection = mysql.createConnection({
-  host: process.env.DBHOST,
-  user: process.env.DBUSER,
-  password: process.env.DBPASSWORD,
-  database: process.env.SYNC_DB_TESTNET,
-});
-
-function executeOTPQuery(query, params, network) {
-  return new Promise((resolve, reject) => {
-    if (network === "Origintrail Parachain Testnet") {
-      otp_testnet_connection.query(query, params, (error, results) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(results);
-        }
-      });
-    }
-    if (network === "Origintrail Parachain Mainnet") {
-      otp_connection.query(query, params, (error, results) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(results);
-        }
-      });
-    }
-  });
-}
-
-async function getOTPData(query, params, network) {
-  try {
-    const results = await executeOTPQuery(query, params, network);
-    return results;
-  } catch (error) {
-    console.error("Error executing query:", error);
-    throw error;
-  }
-}
+const express = require("express");
+const router = express.Router();
+const queryTypes = require('../util/queryTypes')
+const queryDB = queryTypes.queryDB()
 
 /* GET explore page. */
 router.post("/", async function (req, res, next) {
@@ -60,14 +14,15 @@ router.post("/", async function (req, res, next) {
   nodeId = req.body.nodeId;
   public_address = req.body.public_address;
   timeframe = req.body.timeframe;
-  network = req.body.network;
+  network = "";
+  blockchain = "Origintrail Parachain Mainnet";
   limit = "200";
   conditions = [];
   params = []
 
   query = `select signer,UAL,datetime,tokenId,transactionHash,eventName,eventValue1 from v_pubs_activity_last1min WHERE transactionHash != '' AND transactionHash is not null AND signer != '' AND signer is not null UNION ALL select tokenSymbol,UAL,datetime,tokenId,transactionHash,eventName,eventValue1 from v_nodes_activity_last1min WHERE eventName != 'StakeIncreased' AND transactionHash != '' AND transactionHash is not null order by datetime desc LIMIT ${limit}`;
 
-  data = await getOTPData(query, params, network)
+  data = await queryDB.getData(query, params, network, blockchain)
     .then((results) => {
       //console.log('Query results:', results);
       return results;

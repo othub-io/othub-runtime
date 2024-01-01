@@ -1,36 +1,9 @@
 require("dotenv").config();
-var express = require("express");
-var router = express.Router();
-const mysql = require("mysql");
+const express = require("express");
+const router = express.Router();
 const web3passport = require("../auth/passport");
-const othubdb_connection = mysql.createConnection({
-  host: process.env.DBHOST,
-  user: process.env.DBUSER,
-  password: process.env.DBPASSWORD,
-  database: process.env.OTHUB_DB,
-});
-
-function executeOTHubQuery(query, params) {
-  return new Promise((resolve, reject) => {
-    othubdb_connection.query(query, params, (error, results) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve(results);
-      }
-    });
-  });
-}
-
-async function getOTHubData(query, params) {
-  try {
-    const results = await executeOTHubQuery(query, params);
-    return results;
-  } catch (error) {
-    console.error("Error executing query:", error);
-    throw error;
-  }
-}
+const queryTypes = require('../util/queryTypes')
+const queryDB = queryTypes.queryDB()
 
 router.post(
   "/",
@@ -77,7 +50,6 @@ router.post(
         );
 
         enable_apps = JSON.parse(data.enable_apps);
-        console.log(enable_apps)
         for (const key in enable_apps) {
           const value = enable_apps[key];
           if (value === true) {
@@ -174,7 +146,7 @@ router.post(
       sqlQuery =
         query + " " + whereClause + ` order by ${order_by} desc LIMIT ${limit}`;
 
-      txn_header = await getOTHubData(sqlQuery, params)
+      txn_header = await queryDB.getData(sqlQuery, params)
         .then((results) => {
           //console.log('Query results:', results);
           return results;
@@ -204,7 +176,7 @@ router.post(
       sqlQuery =
         query + " " + whereClause + ` order by ${order_by} desc LIMIT ${limit}`;
 
-      raw_txn_header = await getOTHubData(sqlQuery, params)
+      raw_txn_header = await queryDB.getData(sqlQuery, params)
         .then((results) => {
           //console.log('Query results:', results);
           return results;
@@ -216,7 +188,7 @@ router.post(
 
       sqlQuery = "select app_name from enabled_apps where public_address = ?";
       params = [req.user[0].public_address];
-      enabled_apps = await getOTHubData(sqlQuery, params)
+      enabled_apps = await queryDB.getData(sqlQuery, params)
         .then((results) => {
           //console.log('Query results:', results);
           return results;
@@ -228,7 +200,7 @@ router.post(
 
       sqlQuery = "select DISTINCT app_name from app_header";
       params = [];
-      all_apps = await getOTHubData(sqlQuery, params)
+      all_apps = await queryDB.getData(sqlQuery, params)
         .then((results) => {
           //console.log('Query results:', results);
           return results;

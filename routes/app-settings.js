@@ -1,36 +1,9 @@
 require("dotenv").config();
-var express = require("express");
-var router = express.Router();
-const mysql = require("mysql");
+const express = require("express");
+const router = express.Router();
 const web3passport = require('../auth/passport');
-const othubdb_connection = mysql.createConnection({
-  host: process.env.DBHOST,
-  user: process.env.DBUSER,
-  password: process.env.DBPASSWORD,
-  database: process.env.OTHUB_DB,
-});
-
-function executeOTHubQuery (query, params) {
-    return new Promise((resolve, reject) => {
-      othubdb_connection.query(query, params, (error, results) => {
-        if (error) {
-          reject(error)
-        } else {
-          resolve(results)
-        }
-      })
-    })
-  }
-  
-  async function getOTHubData (query, params) {
-    try {
-      const results = await executeOTHubQuery(query, params)
-      return results
-    } catch (error) {
-      console.error('Error executing query:', error)
-      throw error
-    }
-  }
+const queryTypes = require('../util/queryTypes')
+const queryDB = queryTypes.queryDB()
 
 /* GET explore page. */
 router.post("/", web3passport.authenticate('jwt', { session: false }), async function (req, res, next) {
@@ -39,17 +12,17 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
     ip = req.headers["x-forwarded-for"];
   }
 
-  data = req.body;
+  network = ""
+  blockchain = "othub_db"
 
-  app_search = data.app_search
   query = 'select * from othubdb.app_header where app_name = ? LIMIT 1'
-  params = [app_search];
+  params = [req.body.app_search];
   if(app_search === ''){
       query = 'select DISTINCT app_name from othubdb.app_header'
     params = [];
   }
 
-  search_result = await getOTHubData(query, params)
+  search_result = await queryDB.getData(query, params, network, blockchain)
     .then((results) => {
       //console.log('Query results:', results);
       return results;
@@ -61,7 +34,7 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
 
     sqlQuery = "select app_name from enabled_apps where public_address = ?";
     params = [data.account];
-    enabled_apps = await getOTHubData(sqlQuery, params)
+    enabled_apps = await queryDB.getData(sqlQuery, params, network, blockchain)
         .then((results) => {
             //console.log('Query results:', results);
             return results;
@@ -90,7 +63,6 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
         }
     }
 
-    console.log(apps_enabled)
   res.json({
       search_result: search_result,
       apps_enabled: apps_enabled

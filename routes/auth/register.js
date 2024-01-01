@@ -1,36 +1,8 @@
 require('dotenv').config()
-var express = require('express')
-var router = express.Router()
-const mysql = require('mysql')
-
-const othubdb_connection = mysql.createConnection({
-  host: process.env.DBHOST,
-  user: process.env.DBUSER,
-  password: process.env.DBPASSWORD,
-  database: process.env.OTHUB_DB
-})
-
-function executeOTHubQuery (query, params) {
-  return new Promise((resolve, reject) => {
-    othubdb_connection.query(query, params, (error, results) => {
-      if (error) {
-        reject(error)
-      } else {
-        resolve(results)
-      }
-    })
-  })
-}
-
-async function getOTHubData (query, params) {
-  try {
-    const results = await executeOTHubQuery(query, params)
-    return results
-  } catch (error) {
-    console.error('Error executing query:', error)
-    throw error
-  }
-}
+const express = require('express')
+const router = express.Router()
+const queryTypes = require('../../util/queryTypes')
+const queryDB = queryTypes.queryDB()
 
 router.post('/', async function (req, res, next) {
   ip = req.socket.remoteAddress
@@ -40,10 +12,13 @@ router.post('/', async function (req, res, next) {
 
   data = req.body;
   public_address = data.public_address
+  blockchain = "othub_db"
+  network = ""
 
   query = `select * from user_header where public_address = ?`
   params = [public_address]
-  user_record = await getOTHubData(query, params)
+  user_record = await queryDB
+  .getData(query, params, network, blockchain)
     .then(results => {
       return results
     })
@@ -54,17 +29,19 @@ router.post('/', async function (req, res, next) {
   if (user_record == '') {
     query = 'INSERT INTO user_header values (?,?)'
     nonce = Math.floor(Math.random() * 1000000);
-      await othubdb_connection.query(
-        query,
-        [public_address, nonce],
-        function (error, results, fields) {
-          if (error) throw error
-        }
-      )
+    await queryDB
+        .getData(query, [public_address, nonce], network, blockchain)
+            .then(results => {
+            return results
+            })
+            .catch(error => {
+            console.error('Error retrieving data:', error)
+            })
 
       query = `select * from user_header where public_address = ?`
         params = [public_address]
-        user_record = await getOTHubData(query, params)
+        user_record = await queryDB
+        .getData(query, params, "", blockchain)
             .then(results => {
             return results
             })
