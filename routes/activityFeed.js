@@ -11,16 +11,21 @@ router.post("/", async function (req, res, next) {
     ip = req.headers["x-forwarded-for"];
   }
 
-  nodeId = req.body.nodeId;
-  public_address = req.body.public_address;
   timeframe = req.body.timeframe;
-  network = "";
-  blockchain = "Origintrail Parachain Mainnet";
+  network = req.body.network;
+  blockchain = req.body.blockchain;
+
+  console.log(network)
+  console.log(blockchain)
+  if (blockchain) {
+    network = "";
+  }
+
   limit = "200";
   conditions = [];
   params = []
 
-  query = `select signer,UAL,datetime,tokenId,transactionHash,eventName,eventValue1 from v_pubs_activity_last1min WHERE transactionHash != '' AND transactionHash is not null AND signer != '' AND signer is not null UNION ALL select tokenSymbol,UAL,datetime,tokenId,transactionHash,eventName,eventValue1 from v_nodes_activity_last1min WHERE eventName != 'StakeIncreased' AND transactionHash != '' AND transactionHash is not null order by datetime desc LIMIT ${limit}`;
+  query = `select signer,UAL,datetime,tokenId,transactionHash,eventName,eventValue1,chain_id from v_pubs_activity_last1min UNION ALL select tokenSymbol,UAL,datetime,tokenId,transactionHash,eventName,eventValue1,chain_id from v_nodes_activity_last1min WHERE eventName != 'StakeIncreased' order by datetime desc LIMIT ${limit}`;
 
   data = await queryDB.getData(query, params, network, blockchain)
     .then((results) => {
@@ -33,7 +38,7 @@ router.post("/", async function (req, res, next) {
     });
 
   res.json({
-    chart_data: data,
+    activity_data: data,
   });
 });
 

@@ -14,20 +14,63 @@ router.post('/', async function (req, res, next) {
   network = req.body.network;
   blockchain = req.body.blockchain;
 
-  query = `select * from v_nodes where nodeStake >= 50000 order by ? desc`
-  params = ['nodeStake']
-  v_nodes = await queryDB.getData(query, params, network, blockchain)
-    .then(results => {
-      //console.log('Query results:', results);
-      return results
-      // Use the results in your variable or perform further operations
-    })
-    .catch(error => {
-      console.error('Error retrieving data:', error)
+  if (!blockchain) {
+    blockchain = "othub_db";
+    query = `select chain_name,chain_id from blockchains where environment = ?`;
+    params = [network];
+    network = "";
+    blockchains = await queryDB
+      .getData(query, params, network, blockchain)
+      .then((results) => {
+        //console.log('Query results:', results);
+        return results;
+        // Use the results in your variable or perform further operations
+      })
+      .catch((error) => {
+        console.error("Error retrieving data:", error);
+      });
+  }else{
+    query = `select chain_name,chain_id from blockchains where environment = ? and chain_name = ?`;
+    params = [network,blockchain];
+    blockchain = "othub_db";
+    network = "";
+    blockchains = await queryDB
+      .getData(query, params, network, blockchain)
+      .then((results) => {
+        //console.log('Query results:', results);
+        return results;
+        // Use the results in your variable or perform further operations
+      })
+      .catch((error) => {
+        console.error("Error retrieving data:", error);
+      });
+  }
+
+  let nodes_data = [];
+  for (const blockchain of blockchains) {
+    query = `select * from v_nodes where nodeStake >= 50000 order by nodeStake`
+    params = []
+    nodes = await queryDB.getData(query, params, network, blockchain.chain_name)
+      .then(results => {
+        //console.log('Query results:', results);
+        return results
+        // Use the results in your variable or perform further operations
+      })
+      .catch(error => {
+        console.error('Error retrieving data:', error)
     })
 
+    node_data = {
+      blockchain_name: blockchain.chain_name,
+      blockchain_id: blockchain.chain_id,
+      nodes: nodes
+    };
+
+    nodes_data.push(node_data);
+  }
+
   res.json({
-    v_nodes: v_nodes,
+    nodes: nodes_data,
     msg: ``
   })
 })

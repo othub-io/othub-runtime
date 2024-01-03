@@ -16,8 +16,9 @@ router.post("/", async function (req, res, next) {
   network = req.body.network;
   blockchain = req.body.blockchain;
 
-  console.log(network)
-  console.log(blockchain)
+  if (blockchain) {
+    network = ""
+  }
 
   query = `select * from v_pubs`;
   conditions = [];
@@ -65,7 +66,7 @@ router.post("/", async function (req, res, next) {
   whereClause =
     conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
   sqlQuery =
-    query + " " + whereClause + ` order by ${order_by} desc LIMIT ${limit}`;
+    query + " " + whereClause + `order by ${order_by} desc LIMIT ${limit}`;
 
   v_pubs = "";
   console.log(sqlQuery);

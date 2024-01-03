@@ -53,7 +53,8 @@ const deleteKeyRouter = require('./routes/build/delete-key')
 //charts
 const assetsMintedRouter = require('./routes/charts/assetsMinted')
 const earningsRouter = require('./routes/charts/earnings')
-const cumGraphRouter = require('./routes/charts/cumGraph')
+const cumPubsRouter = require('./routes/charts/cumPubs')
+const cumPayRouter = require('./routes/charts/cumPay')
 const nodeStakeRouter = require('./routes/charts/nodeStake')
 
 //images
@@ -102,7 +103,8 @@ app.use('/node-dashboard/nodeSettings', dashboardNodeSettingsRouter)
 //charts
 app.use('/charts/assetsMinted', assetsMintedRouter)
 app.use('/charts/earnings', earningsRouter)
-app.use('/charts/cumGraph', cumGraphRouter)
+app.use('/charts/cumPubs', cumPubsRouter)
+app.use('/charts/cumPay', cumPayRouter)
 app.use('/charts/nodeStake', nodeStakeRouter)
 
 //images

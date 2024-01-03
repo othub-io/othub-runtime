@@ -7,28 +7,46 @@ const queryDB = queryTypes.queryDB();
 /* GET explore page. */
 router.post("/", async function (req, res, next) {
   network = req.body.network;
-  blockchain = "othub_db";
+  blockchain = req.body.blockchain;
 
-  query = `select * from blockchains where environment = ?`;
-  params = [network];
-  network = ""
-  blockchains = await queryDB
-    .getData(query, params, network, blockchain)
-    .then((results) => {
-      //console.log('Query results:', results);
-      return results;
-      // Use the results in your variable or perform further operations
-    })
-    .catch((error) => {
-      console.error("Error retrieving data:", error);
-    });
+  console.log(blockchain)
+  if (!blockchain) {
+    blockchain = "othub_db";
+    query = `select chain_name,chain_id from blockchains where environment = ?`;
+    params = [network];
+    network = "";
+    blockchains = await queryDB
+      .getData(query, params, network, blockchain)
+      .then((results) => {
+        //console.log('Query results:', results);
+        return results;
+        // Use the results in your variable or perform further operations
+      })
+      .catch((error) => {
+        console.error("Error retrieving data:", error);
+      });
+  }else{
+    query = `select chain_name,chain_id from blockchains where environment = ? and chain_name = ?`;
+    params = [network,blockchain];
+    blockchain = "othub_db";
+    network = "";
+    blockchains = await queryDB
+      .getData(query, params, network, blockchain)
+      .then((results) => {
+        //console.log('Query results:', results);
+        return results;
+        // Use the results in your variable or perform further operations
+      })
+      .catch((error) => {
+        console.error("Error retrieving data:", error);
+      });
+  }
 
   let stats_data = [];
   for (const blockchain of blockchains) {
-    query = `select count(*) from v_nodes where nodeStake >= 50000`;
+    query = `select nodeStake from v_nodes where nodeStake >= 50000`;
     params = [];
-    console.log(blockchain.chain_name)
-    node_count = await queryDB
+    nodes = await queryDB
       .getData(query, params, network, blockchain.chain_name)
       .then((results) => {
         //console.log('Query results:', results);
@@ -51,8 +69,8 @@ router.post("/", async function (req, res, next) {
         console.error("Error retrieving data:", error);
       });
 
-    query = `select * from v_pubs_stats 
-        where date != (select block_date from v_sys_staging_date)
+    query = `select totalTracSpent from v_pubs_stats_daily
+        WHERE date < (SELECT MAX(date) FROM v_pubs_stats_daily)
         order by date`;
     pubs_stats = await queryDB
       .getData(query, params, network, blockchain.chain_name)
@@ -65,7 +83,7 @@ router.post("/", async function (req, res, next) {
         console.error("Error retrieving data:", error);
       });
 
-    query = `select * from v_pubs_stats_last24h order by datetime`;
+    query = `select totalPubs,totalTracSpent from v_pubs_stats_last24h order by datetime`;
     pubs_stats_last24h = await queryDB
       .getData(query, params, network, blockchain.chain_name)
       .then((results) => {
@@ -78,22 +96,19 @@ router.post("/", async function (req, res, next) {
       });
 
     totalTracSpent = 0;
-    for (i = 0; i < pubs_stats.length; i++) {
-      pub = pubs_stats[i];
+    for (const pub of pubs_stats) {
       totalTracSpent = totalTracSpent + Number(pub.totalTracSpent);
     }
 
     totalStake = 0;
-    for (i = 0; i < Number(node_count[0].count); i++) {
-      node = nodes[i];
+    for (const node of nodes) {
       totalStake = totalStake + Number(node.nodeStake);
     }
 
     chain_data = {
       blockchain_name: blockchain.chain_name,
       blockchain_id: blockchain.chain_id,
-      nodes: node_count[0].count,
-      pubs_stats: pubs_stats,
+      nodes: nodes.length,
       pubs_stats_last24h: pubs_stats_last24h,
       pub_count: pub_count[0].count,
       totalTracSpent: totalTracSpent,
