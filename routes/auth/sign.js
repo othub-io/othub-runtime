@@ -17,6 +17,7 @@ router.post("/", async function (req, res, next) {
     public_address = data.public_address;
     signature = data.signature;
     blockchain = "othub_db"
+    network = ""
   
     query = `select * from user_header where public_address = ?`;
     params = [public_address];
@@ -55,7 +56,7 @@ router.post("/", async function (req, res, next) {
         query = `UPDATE user_header SET nonce = ? where public_address = ?`;
         params = [Math.floor(Math.random() * 1000000), public_address];
         await queryDB
-        .getData(query, params, "", blockchain)
+        .getData(query, params, network, blockchain)
           .then((results) => {
             return results;
           })

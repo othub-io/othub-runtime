@@ -13,6 +13,7 @@ router.post('/', async function (req, res, next) {
 
   network = req.body.network;
   blockchain = req.body.blockchain;
+  order_by = req.body.order_by;
 
   if (!blockchain) {
     blockchain = "othub_db";
@@ -48,7 +49,7 @@ router.post('/', async function (req, res, next) {
 
   let nodes_data = [];
   for (const blockchain of blockchains) {
-    query = `select * from v_nodes where nodeStake >= 50000 order by nodeStake`
+    query = `select * from v_nodes where nodeStake >= 50000 AND nodeId != '0' order by ${order_by}`
     params = []
     nodes = await queryDB.getData(query, params, network, blockchain.chain_name)
       .then(results => {

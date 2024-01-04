@@ -41,7 +41,7 @@ router.post('/', async function (req, res, next) {
       query = `select * from user_header where public_address = ?`
         params = [public_address]
         user_record = await queryDB
-        .getData(query, params, "", blockchain)
+        .getData(query, params, network, blockchain)
             .then(results => {
             return results
             })

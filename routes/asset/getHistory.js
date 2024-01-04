@@ -12,8 +12,9 @@ router.post("/", async function (req, res, next) {
   }
 
   blockchain = req.body.blockchain;
+  network = ""
 
-  const segments = data.ual.split(":");
+  const segments = req.body.ual.split(":");
   const argsString =
     segments.length === 3 ? segments[2] : segments[2] + segments[3];
   const args = argsString.split("/");
@@ -27,7 +28,7 @@ router.post("/", async function (req, res, next) {
     return;
   }
 
-  limit = data.limit;
+  limit = req.body.limit;
   if (!limit) {
     limit = 500;
   }
@@ -50,7 +51,7 @@ router.post("/", async function (req, res, next) {
     conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
   sqlQuery = query + " " + whereClause + `LIMIT ${limit}`;
   assetHistory = await queryDB
-  .getData(sqlQuery, params, "", blockchain)
+  .getData(sqlQuery, params, network, blockchain)
     .then((results) => {
       //console.log('Query results:', results);
       return results;

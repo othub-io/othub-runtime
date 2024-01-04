@@ -8,13 +8,11 @@ const opts = {};
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 opts.secretOrKey = process.env.JWT_SECRET;
 
-blockchain = "othub_db"
-network = ""
   passport.use(
     new JwtStrategy(opts, async (jwt_payload, done) => {
         query = `select * from user_header where public_address = ?`
         params = [jwt_payload._id]
-        user_record = await queryDB.getData(query, params, network, blockchain)
+        user_record = await queryDB.getData(query, params, "", "othub_db")
             .then(results => {
             return results
             })

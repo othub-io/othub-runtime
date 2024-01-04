@@ -8,6 +8,8 @@ const gnosis_testnet = require("../config/sync_gnosis_testnet");
 
 module.exports = executeQuery = async (query, params, network, blockchain) => {
   return new Promise((resolve, reject) => {
+    let pool;
+    
     if (blockchain === "othub_db") {
       pool = othub_db;
     }

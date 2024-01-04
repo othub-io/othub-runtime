@@ -13,7 +13,7 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
     ip = req.headers["x-forwarded-for"];
   }
 
-  network = req.body.network;
+  network = ""
   blockchain = req.body.blockchain;
 
   query = `select * from v_pubs`;
