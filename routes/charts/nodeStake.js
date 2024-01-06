@@ -15,12 +15,45 @@ router.post("/", async function (req, res, next) {
   network = req.body.network;
   blockchain = req.body.blockchain;
 
+  console.log(blockchain);
+  if (!blockchain) {
+    blockchain = "othub_db";
+    query = `select chain_name,chain_id from blockchains where environment = ?`;
+    params = [network];
+    network = "";
+    blockchains = await queryDB
+      .getData(query, params, network, blockchain)
+      .then((results) => {
+        //console.log('Query results:', results);
+        return results;
+        // Use the results in your variable or perform further operations
+      })
+      .catch((error) => {
+        console.error("Error retrieving data:", error);
+      });
+  } else {
+    query = `select chain_name,chain_id from blockchains where environment = ? and chain_name = ?`;
+    params = [network, blockchain];
+    blockchain = "othub_db";
+    network = "";
+    blockchains = await queryDB
+      .getData(query, params, network, blockchain)
+      .then((results) => {
+        //console.log('Query results:', results);
+        return results;
+        // Use the results in your variable or perform further operations
+      })
+      .catch((error) => {
+        console.error("Error retrieving data:", error);
+      });
+  }
+
   query = `SELECT date, nodesStake, nodesWithMoreThan50kStake, nodesWithLessThan50kStake FROM v_chart_node_stake_count_monthly order by date asc`;
   if (timeframe == "30d") {
     query = `SELECT date, nodesStake, nodesWithMoreThan50kStake, nodesWithLessThan50kStake
     FROM (
         SELECT date, nodesStake, nodesWithMoreThan50kStake, nodesWithLessThan50kStake 
-        FROM v_chart_node_stake_count_daily 
+        FROM v_nodes_stats_daily 
         order by date desc 
         LIMIT 30
     ) AS stake
@@ -30,29 +63,41 @@ router.post("/", async function (req, res, next) {
     query = `SELECT date, nodesStake, nodesWithMoreThan50kStake, nodesWithLessThan50kStake
     FROM (
         SELECT date, nodesStake, nodesWithMoreThan50kStake, nodesWithLessThan50kStake 
-        FROM v_chart_node_stake_count_daily 
+        FROM v_nodes_stats_daily 
         order by date desc 
         LIMIT 182
     ) AS stake
     ORDER BY date asc;`;
   }
   if (timeframe == "1y") {
-    query = `SELECT date, nodesStake, nodesWithMoreThan50kStake, nodesWithLessThan50kStake FROM v_chart_node_stake_count_monthly order by date asc LIMIT 365`
+    query = `SELECT date, nodesStake, nodesWithMoreThan50kStake, nodesWithLessThan50kStake FROM v_nodes_stats_monthly order by date asc LIMIT 365`
   }
 
-  params = [];
-  data = await queryDB.getData(query, params, network, blockchain)
-    .then((results) => {
-      //console.log('Query results:', results);
-      return results;
-      // Use the results in your variable or perform further operations
-    })
-    .catch((error) => {
-      console.error("Error retrieving data:", error);
-    });
+  let stats_data = [];
+  for (const blockchain of blockchains) {
+    params = [];
+    data = await queryDB
+      .getData(query, params, network, blockchain.chain_name)
+      .then((results) => {
+        //console.log('Query results:', results);
+        return results;
+        // Use the results in your variable or perform further operations
+      })
+      .catch((error) => {
+        console.error("Error retrieving data:", error);
+      });
+
+    chain_data = {
+      blockchain_name: blockchain.chain_name,
+      blockchain_id: blockchain.chain_id,
+      chart_data: data,
+    };
+
+    stats_data.push(chain_data);
+  }
 
   res.json({
-    chart_data: data,
+    chart_data: stats_data,
   });
 });
 

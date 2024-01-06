@@ -57,7 +57,7 @@ router.post("/", async function (req, res, next) {
         console.error("Error retrieving data:", error);
       });
 
-    query = `select count(*) as count from v_pubs order by block_date`;
+    query = `select sum(totalPubs) as count from v_pubs_stats_daily`;
     pub_count = await queryDB
       .getData(query, params, network, blockchain.chain_name)
       .then((results) => {

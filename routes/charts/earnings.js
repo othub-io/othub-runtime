@@ -15,12 +15,45 @@ router.post("/", async function (req, res, next) {
   network = req.body.network;
   blockchain = req.body.blockchain;
 
-  query = `select * from v_chart_earnings_payouts_monthly`;
+  console.log(blockchain);
+  if (!blockchain) {
+    blockchain = "othub_db";
+    query = `select chain_name,chain_id from blockchains where environment = ?`;
+    params = [network];
+    network = "";
+    blockchains = await queryDB
+      .getData(query, params, network, blockchain)
+      .then((results) => {
+        //console.log('Query results:', results);
+        return results;
+        // Use the results in your variable or perform further operations
+      })
+      .catch((error) => {
+        console.error("Error retrieving data:", error);
+      });
+  } else {
+    query = `select chain_name,chain_id from blockchains where environment = ? and chain_name = ?`;
+    params = [network, blockchain];
+    blockchain = "othub_db";
+    network = "";
+    blockchains = await queryDB
+      .getData(query, params, network, blockchain)
+      .then((results) => {
+        //console.log('Query results:', results);
+        return results;
+        // Use the results in your variable or perform further operations
+      })
+      .catch((error) => {
+        console.error("Error retrieving data:", error);
+      });
+  }
+
+  query = `select * from v_nodes_stats_grouped_monthly`;
   if (timeframe == "24h") {
     query = `SELECT datetime as date, estimatedEarnings1stEpochOnly, estimatedEarnings2plusEpochs, payouts
     FROM (
         SELECT datetime, estimatedEarnings1stEpochOnly, estimatedEarnings2plusEpochs, payouts
-        FROM v_chart_earnings_payouts_hourly
+        FROM v_nodes_stats_grouped_hourly_7d
         ORDER BY datetime DESC
         LIMIT 24
     ) AS records
@@ -30,7 +63,7 @@ router.post("/", async function (req, res, next) {
     query = `SELECT datetime as date, estimatedEarnings1stEpochOnly, estimatedEarnings2plusEpochs, payouts
     FROM (
         SELECT datetime, estimatedEarnings1stEpochOnly, estimatedEarnings2plusEpochs, payouts
-        FROM v_chart_earnings_payouts_hourly
+        FROM v_nodes_stats_grouped_hourly_7d
         ORDER BY datetime DESC
         LIMIT 168
     ) AS records
@@ -40,7 +73,7 @@ router.post("/", async function (req, res, next) {
     query = `SELECT date, estimatedEarnings1stEpochOnly, estimatedEarnings2plusEpochs, payouts
     FROM (
         SELECT date, estimatedEarnings1stEpochOnly, estimatedEarnings2plusEpochs, payouts
-        FROM v_chart_earnings_payouts_daily
+        FROM v_nodes_stats_grouped_daily
         ORDER BY date DESC
         LIMIT 30
     ) AS records
@@ -50,29 +83,41 @@ router.post("/", async function (req, res, next) {
     query = `SELECT date, estimatedEarnings1stEpochOnly, estimatedEarnings2plusEpochs, payouts
     FROM (
         SELECT date, estimatedEarnings1stEpochOnly, estimatedEarnings2plusEpochs, payouts
-        FROM v_chart_earnings_payouts_daily
+        FROM v_nodes_stats_grouped_daily
         ORDER BY date DESC
         LIMIT 182
     ) AS records
     ORDER BY date ASC`;
   }
   if (timeframe == "1y") {
-    query = `select * from v_chart_earnings_payouts_monthly LIMIT 12`
+    query = `select * from v_nodes_stats_grouped_monthly LIMIT 12`
   }
 
-  params = [];
-  data = await queryDB.getData(query, params, network, blockchain)
-    .then((results) => {
-      //console.log('Query results:', results);
-      return results;
-      // Use the results in your variable or perform further operations
-    })
-    .catch((error) => {
-      console.error("Error retrieving data:", error);
-    });
+  let stats_data = [];
+  for (const blockchain of blockchains) {
+    params = [];
+    data = await queryDB
+      .getData(query, params, network, blockchain.chain_name)
+      .then((results) => {
+        //console.log('Query results:', results);
+        return results;
+        // Use the results in your variable or perform further operations
+      })
+      .catch((error) => {
+        console.error("Error retrieving data:", error);
+      });
+
+    chain_data = {
+      blockchain_name: blockchain.chain_name,
+      blockchain_id: blockchain.chain_id,
+      chart_data: data,
+    };
+
+    stats_data.push(chain_data);
+  }
 
   res.json({
-    chart_data: data,
+    chart_data: stats_data,
   });
 });
 
