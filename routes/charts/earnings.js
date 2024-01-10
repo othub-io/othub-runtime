@@ -15,7 +15,6 @@ router.post("/", async function (req, res, next) {
   network = req.body.network;
   blockchain = req.body.blockchain;
 
-  console.log(blockchain);
   if (!blockchain) {
     blockchain = "othub_db";
     query = `select chain_name,chain_id from blockchains where environment = ?`;

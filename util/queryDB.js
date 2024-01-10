@@ -7,7 +7,7 @@ const gnosis_mainnet = require("../config/sync_gnosis_mainnet");
 const gnosis_testnet = require("../config/sync_gnosis_testnet");
 
 module.exports = executeQuery = async (query, params, network, blockchain) => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     let pool;
     
     if (blockchain === "othub_db") {
@@ -38,7 +38,7 @@ module.exports = executeQuery = async (query, params, network, blockchain) => {
       pool = dkg_testnet;
     }
 
-    pool.query(query, params, (error, results) => {
+    await pool.query(query, params, (error, results) => {
       if (error) {
         reject(error);
       } else {

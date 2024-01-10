@@ -28,7 +28,9 @@ router.post("/", async function (req, res, next) {
 
   query = `SELECT nodeStake from v_nodes WHERE nodeId in (${ques})`;
 
-  data = await queryDB.getData(query, params, network, blockchain)
+  let node_data = []
+  for(const blockchain of nodeId){
+    data = await queryDB.getData(query, params, network, blockchain.chain_name)
     .then((results) => {
       //console.log('Query results:', results);
       return results;
@@ -38,8 +40,17 @@ router.post("/", async function (req, res, next) {
       console.error("Error retrieving data:", error);
     });
 
+    node_info = {
+      blockchain_name: blockchain.chain_name,
+      blockchain_id: blockchain.chain_id,
+      chart_data: data,
+    };
+
+    node_data.push(node_info)
+  }
+
   res.json({
-    chart_data: data,
+    chart_data: node_data,
   });
 });
 

@@ -8,8 +8,9 @@ const queryDB = queryTypes.queryDB();
 router.post("/", async function (req, res, next) {
   network = req.body.network;
   blockchain = req.body.blockchain;
+  nodes = req.body.nodes;
 
-  console.log(blockchain)
+  console.log(nodes)
   if (!blockchain) {
     blockchain = "othub_db";
     query = `select chain_name,chain_id from blockchains where environment = ?`;

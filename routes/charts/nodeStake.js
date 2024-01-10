@@ -15,7 +15,6 @@ router.post("/", async function (req, res, next) {
   network = req.body.network;
   blockchain = req.body.blockchain;
 
-  console.log(blockchain);
   if (!blockchain) {
     blockchain = "othub_db";
     query = `select chain_name,chain_id from blockchains where environment = ?`;
@@ -48,29 +47,29 @@ router.post("/", async function (req, res, next) {
       });
   }
 
-  query = `SELECT date, nodesStake, nodesWithMoreThan50kStake, nodesWithLessThan50kStake FROM v_chart_node_stake_count_monthly order by date asc`;
+  query = `SELECT date, combinedNodesStake,nodesWithMoreThan50kStake FROM v_nodes_stats_grouped_monthly order by date asc`;
   if (timeframe == "30d") {
-    query = `SELECT date, nodesStake, nodesWithMoreThan50kStake, nodesWithLessThan50kStake
+    query = `SELECT date, nodeStake,nodesWithMoreThan50kStake
     FROM (
-        SELECT date, nodesStake, nodesWithMoreThan50kStake, nodesWithLessThan50kStake 
-        FROM v_nodes_stats_daily 
+        SELECT date, combinedNodesStake,nodesWithMoreThan50kStake
+        FROM v_nodes_stats_grouped_daily 
         order by date desc 
         LIMIT 30
     ) AS stake
     ORDER BY date asc;`;
   }
   if (timeframe == "6m") {
-    query = `SELECT date, nodesStake, nodesWithMoreThan50kStake, nodesWithLessThan50kStake
+    query = `SELECT date, combinedNodesStake,nodesWithMoreThan50kStake
     FROM (
-        SELECT date, nodesStake, nodesWithMoreThan50kStake, nodesWithLessThan50kStake 
-        FROM v_nodes_stats_daily 
+        SELECT date, combinedNodesStake,nodesWithMoreThan50kStake
+        FROM v_nodes_stats_grouped_daily 
         order by date desc 
         LIMIT 182
     ) AS stake
     ORDER BY date asc;`;
   }
   if (timeframe == "1y") {
-    query = `SELECT date, nodesStake, nodesWithMoreThan50kStake, nodesWithLessThan50kStake FROM v_nodes_stats_monthly order by date asc LIMIT 365`
+    query = `SELECT date, combinedNodesStake, nodesWithMoreThan50kStake FROM v_nodes_stats_grouped_monthly order by date asc LIMIT 365`
   }
 
   let stats_data = [];
