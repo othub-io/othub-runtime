@@ -32,6 +32,7 @@ router.post("/", async function (req, res, next) {
   conditions = [];
   params = nodes;
 
+  console.log(params)
   let stats_data = [];
   for (let blockchain of blockchains) {
     let blockchain_ids = nodes
