@@ -27,6 +27,8 @@ router.post(
     keccak256hash = "0x" + keccak256hash;
     like_keccak256hash = "%" + keccak256hash + "%";
 
+    console.log(network)
+    console.log(blockchain)
     if (!blockchain) {
       blockchain = "othub_db";
       query = `select chain_name,chain_id from blockchains where environment = ?`;

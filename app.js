@@ -37,8 +37,6 @@ const inventoryRouter = require('./routes/inventory')
 const dashboardNodesRouter = require('./routes/node-dashboard/nodes')
 const dashboardNodeStatsRouter = require('./routes/node-dashboard/nodeStats')
 const dashboardNodeDataRouter = require('./routes/node-dashboard/nodeData')
-const dashboardNodeStakeRouter = require('./routes/node-dashboard/nodeStake')
-const dashboardNodeCommitsRouter = require('./routes/node-dashboard/nodeCommits')
 const dashboardNodeSettingsRouter = require('./routes/node-dashboard/nodeSettings')
 
 
@@ -98,8 +96,6 @@ app.use('/inventory', inventoryRouter)
 app.use('/node-dashboard/nodes', dashboardNodesRouter)
 app.use('/node-dashboard/nodeStats', dashboardNodeStatsRouter)
 app.use('/node-dashboard/nodeData', dashboardNodeDataRouter)
-app.use('/node-dashboard/nodeStake', dashboardNodeStakeRouter)
-app.use('/node-dashboard/nodeCommits', dashboardNodeCommitsRouter)
 app.use('/node-dashboard/nodeSettings', dashboardNodeSettingsRouter)
 
 //charts

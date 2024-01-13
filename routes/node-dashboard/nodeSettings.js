@@ -5,8 +5,8 @@ const keccak256 = require("keccak256");
 const { Telegraf } = require("telegraf");
 const axios = require("axios");
 const web3passport = require("../../auth/passport");
-const queryTypes = require('../../util/queryTypes')
-const queryDB = queryTypes.queryDB()
+const queryTypes = require("../../util/queryTypes");
+const queryDB = queryTypes.queryDB();
 
 /* GET explore page. */
 router.post("/", web3passport.authenticate('jwt', { session: false }), async function (req, res, next) {
@@ -16,8 +16,9 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
     }
 
     public_address = req.user[0].public_address;
-    network = req.body.network;
+    network = "";
     blockchain = "othub_db";
+    nodes = req.body.nodes;
     botToken = req.body.botToken;
     telegramID = req.body.telegramID;
     sendScript = req.body.sendScript;
@@ -25,28 +26,14 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
     nodeRecords = [];
     operatorRecord = [];
 
+    console.log(nodes)
     if (!public_address) {
       res.json({
-        nodeRecords: nodeRecords,
         operatorRecord: operatorRecord,
         msg: ` `,
       });
       return;
     }
-
-    keccak256hash = keccak256(public_address).toString("hex");
-    keccak256hash = "0x" + keccak256hash;
-    like_keccak256hash = "%" + keccak256hash + "%";
-
-    query = `select * from v_nodes where current_adminWallet_hashes like ?`;
-    params = [like_keccak256hash];
-    nodeIds = await queryDB.getData(query, params, network, blockchain)
-      .then((results) => {
-        return results;
-      })
-      .catch((error) => {
-        console.error("Error retrieving data:", error);
-      });
 
     validToken = "no";
     if (botToken) {
@@ -67,9 +54,11 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
     if (validToken === "yes") {
       query =
         "INSERT INTO node_operators (public_address,botToken) VALUES (?,?) ON DUPLICATE KEY UPDATE botToken = ?";
-      await othubdb_connection.query(
+      await queryDB.getData(
         query,
         [public_address, botToken, botToken],
+        network,
+        blockchain,
         function (error, results, fields) {
           if (error) throw error;
         }
@@ -79,7 +68,7 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
     params = [public_address, telegramID, telegramID]
     query = "INSERT INTO node_operators (public_address,telegramID) VALUES (?,?) ON DUPLICATE KEY UPDATE telegramID = ?";
     if (telegramID && telegramID.length <= 10 && Number(telegramID)) {
-      await queryTypes.queryDB(query, params, network, blockchain)
+      await queryDB.getData(query, params, network, blockchain)
       .then((results) => {
         return results;
       })
@@ -90,7 +79,7 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
 
     query = `select * from node_operators where public_address = ?`;
     params = [public_address];
-    operatorRecord = await queryTypes.queryDB(query, params, network, blockchain)
+    operatorRecord = await queryDB.getData(query, params, network, blockchain)
       .then((results) => {
         return results;
       })
@@ -108,16 +97,16 @@ router.post("/", web3passport.authenticate('jwt', { session: false }), async fun
         
 Looks like you've added or changed your Telegram ID. Here are commands to run to install/update the othub node monitoring script on your node(s):`;
 
-      for (i = 0; i < nodeIds.length; ++i) {
+      for (i = 0; i < nodes.length; ++i) {
         msg =
           msg +
           `
 
-<-------Run this for Node ${nodeIds[i].tokenName}------->
+<-------Run this for Node ${nodes[i].tokenName}------->
 wget -O /etc/cron.hourly/node-hourly-monitor https://raw.githubusercontent.com/othub-io/othub-runtime/master/public/scripts/node-monitor-hourly.sh &&
 chmod +x /etc/cron.hourly/node-hourly-monitor &&
 mkdir -p /etc/othub &&
-echo -e "CHAT_ID="${operatorRecord[0].telegramID}" \nBOT_ID="${operatorRecord[0].botToken}" \nNODE_ID="${nodeIds[i].nodeId}" \nAPI_KEY="${process.env.NODE_OPS_KEY}" \nMAX_STORAGE_PERCENT="90"" > /etc/othub/config
+echo -e "CHAT_ID="${operatorRecord[0].telegramID}" \nBOT_ID="${operatorRecord[0].botToken}" \nNODE_ID="${nodes[i].nodeId}" \nAPI_KEY="${process.env.NODE_OPS_KEY}" \nMAX_STORAGE_PERCENT="90"" > /etc/othub/config
 
           `;
       }
@@ -131,25 +120,9 @@ echo -e "CHAT_ID="${operatorRecord[0].telegramID}" \nBOT_ID="${operatorRecord[0]
       }
     }
 
-    nodeRecords = [];
-    for (i = 0; i < nodeIds.length; ++i) {
-      query = `select * from v_nodes_stats where nodeId=? order by date desc LIMIT 1`;
-      params = [nodeIds[i].nodeId];
-      node_stat = await queryTypes.queryDB(query, params, network, blockchain)
-        .then((results) => {
-          return results;
-        })
-        .catch((error) => {
-          console.error("Error retrieving data:", error);
-        });
-
-      nodeRecords.push(node_stat[0]);
-    }
-
     res.json({
-      nodeRecords: nodeRecords,
       operatorRecord: operatorRecord,
-      msg: ``,
+      msg: `success`,
     });
 });
 

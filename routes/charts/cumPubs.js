@@ -64,7 +64,7 @@ router.post("/", async function (req, res, next) {
   let chart_data = [];
 
   network = req.body.network;
-  query = `select date,cumulativePubs from v_pubs_stats_daily order by date LIMIT ${limit}`;
+  query = `select date,cumulativePubs from v_pubs_stats_monthly order by date`;
   params = [];
   blockchain = ""
   data = await queryDB
@@ -88,7 +88,7 @@ router.post("/", async function (req, res, next) {
 
   network = "";
   for (const blockchain of blockchains) {
-    query = `select date,cumulativePubs from v_pubs_stats_daily order by date LIMIT ${limit}`;
+    query = `select date,cumulativePubs from v_pubs_stats_monthly order by date`;
     params = [];
     data = await queryDB
       .getData(query, params, network, blockchain.chain_name)
