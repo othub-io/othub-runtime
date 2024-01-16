@@ -12,7 +12,6 @@ router.post("/", async function (req, res, next) {
   const uniqueBlockchains = [];
   let blockchains = req.body.blockchain;
 
-  console.log("fsfd " + JSON.stringify(nodes))
   if (!blockchains) {
     blockchains = nodes
       .map((node) => node.blockchain_name)
@@ -31,7 +30,6 @@ router.post("/", async function (req, res, next) {
 
   limit = "1000";
   conditions = [];
-  params = nodes;
 
   let stats_data = [];
   for (let blockchain of blockchains) {

@@ -19,9 +19,9 @@ router.post(
 
       if (data.rejectTxn) {
         query = `UPDATE txn_header set progress = 'REJECTED' where txn_id = ?`;
-        await othubdb_connection.query(
+        await queryDB.getData(
           query,
-          [data.rejectTxn],
+          [data.rejectTxn], "", "othub_db",
           function (error, results, fields) {
             if (error) throw error;
           }
@@ -30,9 +30,9 @@ router.post(
 
       if (data.completeTxn) {
         query = `UPDATE txn_header set progress = 'COMPLETE',ual = ?, epochs = ? where txn_id = ?`;
-        await othubdb_connection.query(
+        await queryDB.getData(
           query,
-          [data.ual, data.epochs, data.completeTxn],
+          [data.ual, data.epochs, data.completeTxn], "", "othub_db",
           function (error, results, fields) {
             if (error) throw error;
           }
@@ -41,9 +41,9 @@ router.post(
 
       if (data.enable_apps) {
         query = "DELETE FROM enabled_apps WHERE public_address = ?";
-        await othubdb_connection.query(
+        await queryDB.getData(
           query,
-          [req.user[0].public_address],
+          [req.user[0].public_address], "", "othub_db",
           function (error, results, fields) {
             if (error) throw error;
           }
@@ -55,9 +55,9 @@ router.post(
           if (value === true) {
             query =
               "INSERT INTO enabled_apps (public_address,app_name) VALUES (?,?)";
-            await othubdb_connection.query(
+            await queryDB.getData(
               query,
-              [req.user[0].public_address, key],
+              [req.user[0].public_address, key], "", "othub_db",
               function (error, results, fields) {
                 if (error) throw error;
               }
@@ -82,11 +82,21 @@ router.post(
 
       if (data.network == "Origintrail Parachain Testnet") {
         conditions.push(`network = ?`);
-        params.push("otp::testnet");
+        params.push("otp:20430");
       }
+      if (data.network == "Chiado Testnet") {
+        conditions.push(`network = ?`);
+        params.push("gnosis:10200");
+      }
+
       if (data.network == "Origintrail Parachain Mainnet") {
         conditions.push(`network = ?`);
-        params.push("otp::mainnet");
+        params.push("otp:2043");
+      }
+
+      if (data.network == "Gnosis Mainnet") {
+        conditions.push(`network = ?`);
+        params.push("gnosis:100");
       }
 
       if (data.txn_id) {
@@ -146,7 +156,7 @@ router.post(
       sqlQuery =
         query + " " + whereClause + ` order by ${order_by} desc LIMIT ${limit}`;
 
-      txn_header = await queryDB.getData(sqlQuery, params)
+      txn_header = await queryDB.getData(sqlQuery, params, "", "othub_db")
         .then((results) => {
           //console.log('Query results:', results);
           return results;
@@ -164,19 +174,29 @@ router.post(
 
         if (data.network == "Origintrail Parachain Testnet") {
           conditions.push(`network = ?`);
-          params.push("otp::testnet");
+          params.push("otp:20430");
         }
+        if (data.network == "Chiado Testnet") {
+          conditions.push(`network = ?`);
+          params.push("gnosis:10200");
+        }
+  
         if (data.network == "Origintrail Parachain Mainnet") {
           conditions.push(`network = ?`);
-          params.push("otp::mainnet");
+          params.push("otp:2043");
+        }
+  
+        if (data.network == "Gnosis Mainnet") {
+          conditions.push(`network = ?`);
+          params.push("gnosis:100");
         }
 
       whereClause =
-        conditions.length > 0 ? "WHERE LOWER(" + conditions.join(") AND ") : "";
+        conditions.length > 0 ? "WHERE " + conditions.join(` AND `) : "";
       sqlQuery =
         query + " " + whereClause + ` order by ${order_by} desc LIMIT ${limit}`;
 
-      raw_txn_header = await queryDB.getData(sqlQuery, params)
+      raw_txn_header = await queryDB.getData(sqlQuery, params, "", "othub_db")
         .then((results) => {
           //console.log('Query results:', results);
           return results;
@@ -188,7 +208,7 @@ router.post(
 
       sqlQuery = "select app_name from enabled_apps where public_address = ?";
       params = [req.user[0].public_address];
-      enabled_apps = await queryDB.getData(sqlQuery, params)
+      enabled_apps = await queryDB.getData(sqlQuery, params, "", "othub_db")
         .then((results) => {
           //console.log('Query results:', results);
           return results;
@@ -200,7 +220,7 @@ router.post(
 
       sqlQuery = "select DISTINCT app_name from app_header";
       params = [];
-      all_apps = await queryDB.getData(sqlQuery, params)
+      all_apps = await queryDB.getData(sqlQuery, params, "", "othub_db")
         .then((results) => {
           //console.log('Query results:', results);
           return results;

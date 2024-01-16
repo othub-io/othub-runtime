@@ -15,8 +15,6 @@ router.post("/", async function (req, res, next) {
   network = req.body.network;
   blockchain = req.body.blockchain;
 
-  console.log(network)
-  console.log(blockchain)
   if (blockchain) {
     network = "";
   }

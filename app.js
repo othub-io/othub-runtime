@@ -38,6 +38,7 @@ const dashboardNodesRouter = require('./routes/node-dashboard/nodes')
 const dashboardNodeStatsRouter = require('./routes/node-dashboard/nodeStats')
 const dashboardNodeDataRouter = require('./routes/node-dashboard/nodeData')
 const dashboardNodeSettingsRouter = require('./routes/node-dashboard/nodeSettings')
+const dashboardActivityFeedRouter = require('./routes/node-dashboard/activityFeed')
 
 
 //build
@@ -97,6 +98,7 @@ app.use('/node-dashboard/nodes', dashboardNodesRouter)
 app.use('/node-dashboard/nodeStats', dashboardNodeStatsRouter)
 app.use('/node-dashboard/nodeData', dashboardNodeDataRouter)
 app.use('/node-dashboard/nodeSettings', dashboardNodeSettingsRouter)
+app.use('/node-dashboard/activityFeed', dashboardActivityFeedRouter)
 
 //charts
 app.use('/charts/assetsMinted', assetsMintedRouter)
