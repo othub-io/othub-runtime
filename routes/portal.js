@@ -80,7 +80,7 @@ router.post(
         params.push(req.user[0].public_address);
       }
 
-      if (data.network == "Origintrail Parachain Testnet") {
+      if (data.network == "NeuroWeb Testnet") {
         conditions.push(`network = ?`);
         params.push("otp:20430");
       }
@@ -89,7 +89,7 @@ router.post(
         params.push("gnosis:10200");
       }
 
-      if (data.network == "Origintrail Parachain Mainnet") {
+      if (data.network == "NeuroWeb Mainnet") {
         conditions.push(`network = ?`);
         params.push("otp:2043");
       }
@@ -172,7 +172,7 @@ router.post(
         conditions.push(`approver = ?`);
         params.push(req.user[0].public_address);
 
-        if (data.network == "Origintrail Parachain Testnet") {
+        if (data.network == "NeuroWeb Testnet") {
           conditions.push(`network = ?`);
           params.push("otp:20430");
         }
@@ -181,7 +181,7 @@ router.post(
           params.push("gnosis:10200");
         }
   
-        if (data.network == "Origintrail Parachain Mainnet") {
+        if (data.network == "NeuroWeb Mainnet") {
           conditions.push(`network = ?`);
           params.push("otp:2043");
         }

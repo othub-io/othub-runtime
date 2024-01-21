@@ -89,7 +89,7 @@ router.post("/", async function (req, res, next) {
     ORDER BY date ASC`;
   }
   if (timeframe == "1y") {
-    query = `select * from v_nodes_stats_grouped_monthly LIMIT 12`
+    query = `select * from v_nodes_stats_grouped_monthly ORDER BY date DESC LIMIT 12`
   }
 
   let stats_data = [];

@@ -1,8 +1,8 @@
 const othub_db = require("../config/othub_db");
 const dkg_mainnet = require("../config/dkg_mainnet");
 const dkg_testnet = require("../config/dkg_testnet");
-const otp_mainnet = require("../config/sync_otp_mainnet");
-const otp_testnet = require("../config/sync_otp_testnet");
+const neuroweb_mainnet = require("../config/sync_neuroweb_mainnet");
+const neuroweb_testnet = require("../config/sync_neuroweb_testnet");
 const gnosis_mainnet = require("../config/sync_gnosis_mainnet");
 const gnosis_testnet = require("../config/sync_gnosis_testnet");
 
@@ -22,12 +22,12 @@ module.exports = executeQuery = async (query, params, network, blockchain) => {
       pool = gnosis_mainnet;
     }
 
-    if (blockchain === "Origintrail Parachain Testnet") {
-      pool = otp_testnet;
+    if (blockchain === "NeuroWeb Testnet") {
+      pool = neuroweb_testnet;
     }
 
-    if (blockchain === "Origintrail Parachain Mainnet") {
-      pool = otp_mainnet;
+    if (blockchain === "NeuroWeb Mainnet") {
+      pool = neuroweb_mainnet;
     }
 
     if (network === "DKG Mainnet") {

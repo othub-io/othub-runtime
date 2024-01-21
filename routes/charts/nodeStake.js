@@ -49,7 +49,7 @@ router.post("/", async function (req, res, next) {
 
   query = `SELECT date, combinedNodesStake,nodesWithMoreThan50kStake FROM v_nodes_stats_grouped_monthly order by date asc`;
   if (timeframe == "30d") {
-    query = `SELECT date, nodeStake,nodesWithMoreThan50kStake
+    query = `SELECT date, combinedNodesStake,nodesWithMoreThan50kStake
     FROM (
         SELECT date, combinedNodesStake,nodesWithMoreThan50kStake
         FROM v_nodes_stats_grouped_daily 

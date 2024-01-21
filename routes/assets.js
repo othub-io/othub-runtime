@@ -59,7 +59,7 @@ router.post("/", async function (req, res, next) {
   }
 
   if (network == '') {
-    network = 'Origintrail Parachain Mainnet'
+    network = 'NeuroWeb Mainnet'
   }
 
 

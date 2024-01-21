@@ -64,13 +64,13 @@ router.post("/", async function (req, res, next) {
   }
   if (timeframe == "30d") {
     query = `SELECT date, totalPubs, totalTracSpent , avgPubSize, avgPubPrice, avgBid, privatePubsPercentage, avgEpochsNumber
-    FROM v_pubs_stats 
+    FROM v_pubs_stats_daily 
     where date >= (select cast(DATE_ADD(block_ts, interval -1 MONTH) as date) as t from v_sys_staging_date)
     order by date`;
   }
   if (timeframe == "6m") {
     query = `SELECT date, totalPubs, totalTracSpent , avgPubSize, avgPubPrice, avgBid, privatePubsPercentage, avgEpochsNumber
-    FROM v_pubs_stats 
+    FROM v_pubs_stats_daily 
     where date >= (select cast(DATE_ADD(block_ts, interval -6 MONTH) as date) as t from v_sys_staging_date)
     order by date`;
   }

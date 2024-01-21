@@ -49,7 +49,7 @@ router.post('/', async function (req, res, next) {
 
   let nodes_data = [];
   for (const blockchain of blockchains) {
-    query = `select * from v_nodes where nodeStake >= 50000 AND nodeId != '0' order by ${order_by}`
+    query = `select * from v_nodes where nodeStake >= 50000 AND nodeId != '0' order by ${order_by} asc`
     params = []
     nodes = await queryDB.getData(query, params, network, blockchain.chain_name)
       .then(results => {

@@ -28,7 +28,7 @@ router.post("/", async function (req, res, next) {
 
   network = "";
 
-  limit = "1000";
+  limit = "500";
   conditions = [];
 
   let stats_data = [];
@@ -49,7 +49,7 @@ router.post("/", async function (req, res, next) {
       ques = ques.substring(0, ques.length - 1);
     }
 
-    query = `select signer,UAL,datetime,tokenId,transactionHash,eventName,eventValue1,chain_id from v_pubs_activity_last1min UNION ALL select tokenSymbol,UAL,datetime,tokenId,transactionHash,eventName,eventValue1,chain_id from v_nodes_activity_last24h WHERE nodeId in (${ques}) AND eventName != 'StakeIncreased' order by datetime desc LIMIT ${limit}`
+    query = `select signer,UAL,datetime,tokenId,transactionHash,eventName,eventValue1,chain_id from v_pubs_activity_last24h UNION ALL select tokenSymbol,UAL,datetime,tokenId,transactionHash,eventName,eventValue1,chain_id from v_nodes_activity_last24h WHERE nodeId in (${ques}) AND eventName != 'StakeIncreased' order by datetime desc LIMIT ${limit}`
 
     data = await queryDB
       .getData(query, params, network, blockchain)
@@ -72,7 +72,7 @@ router.post("/", async function (req, res, next) {
   }
 
   res.json({
-    chart_data: stats_data,
+    activity_data: stats_data,
   });
 });
 

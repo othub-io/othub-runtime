@@ -5,7 +5,7 @@ const pool = mysql.createPool({
     host: process.env.DBHOST,
     user: process.env.DBUSER,
     password: process.env.DBPASSWORD,
-    database: process.env.SYNC_OTP_MAINNET,
+    database: process.env.SYNC_NEUROWEB_MAINNET,
     waitForConnections: true,
     connectionLimit: 1000, // Adjust this based on your requirements
     queueLimit: 0
