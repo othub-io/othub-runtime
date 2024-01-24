@@ -1,52 +1,8 @@
 require("dotenv").config();
-var express = require("express");
-var router = express.Router();
-const mysql = require("mysql");
-const otp_connection = mysql.createConnection({
-    host: process.env.DBHOST,
-    user: process.env.DBUSER,
-    password: process.env.DBPASSWORD,
-    database: process.env.SYNC_DB,
-  });
-  
-  const otp_testnet_connection = mysql.createConnection({
-    host: process.env.DBHOST,
-    user: process.env.DBUSER,
-    password: process.env.DBPASSWORD,
-    database: process.env.SYNC_DB_TESTNET,
-  });
-
-function executeOTPQuery(query, params,network) {
-  return new Promise((resolve, reject) => {
-    if (network == "Origintrail Parachain Testnet") {
-        otp_testnet_connection.query(query, params, (error, results) => {
-            if (error) {
-              reject(error);
-            } else {
-              resolve(results);
-            }
-          });
-      } else {
-        otp_connection.query(query, params, (error, results) => {
-            if (error) {
-              reject(error);
-            } else {
-              resolve(results);
-            }
-          });
-      }
-  });
-}
-
-async function getOTPData(query, params, network) {
-  try {
-    const results = await executeOTPQuery(query, params,network);
-    return results;
-  } catch (error) {
-    console.error("Error executing query:", error);
-    throw error;
-  }
-}
+const express = require("express");
+const router = express.Router();
+const queryTypes = require('../../util/queryTypes')
+const queryDB = queryTypes.queryDB()
 
 /* GET explore page. */
 router.post("/", async function (req, res, next) {
@@ -55,9 +11,10 @@ router.post("/", async function (req, res, next) {
     ip = req.headers["x-forwarded-for"];
   }
 
-  data = req.body;
+  blockchain = req.body.blockchain;
+  network = ""
 
-  const segments = data.ual.split(":");
+  const segments = req.body.ual.split(":");
   const argsString =
     segments.length === 3 ? segments[2] : segments[2] + segments[3];
   const args = argsString.split("/");
@@ -71,7 +28,7 @@ router.post("/", async function (req, res, next) {
     return;
   }
 
-  limit = data.limit;
+  limit = req.body.limit;
   if (!limit) {
     limit = 500;
   }
@@ -93,7 +50,8 @@ router.post("/", async function (req, res, next) {
   whereClause =
     conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
   sqlQuery = query + " " + whereClause + `LIMIT ${limit}`;
-  assetHistory = await getOTPData(sqlQuery, params, data.network)
+  assetHistory = await queryDB
+  .getData(sqlQuery, params, network, blockchain)
     .then((results) => {
       //console.log('Query results:', results);
       return results;

@@ -1,53 +1,8 @@
 require("dotenv").config();
-var express = require("express");
-var router = express.Router();
-const mysql = require("mysql");
-const otp_connection = mysql.createConnection({
-  host: process.env.DBHOST,
-  user: process.env.DBUSER,
-  password: process.env.DBPASSWORD,
-  database: process.env.SYNC_DB,
-});
-
-const otp_testnet_connection = mysql.createConnection({
-  host: process.env.DBHOST,
-  user: process.env.DBUSER,
-  password: process.env.DBPASSWORD,
-  database: process.env.SYNC_DB_TESTNET,
-});
-
-function executeOTPQuery(query, params,network ) {
-  return new Promise((resolve, reject) => {
-    if (network === "Origintrail Parachain Testnet") {
-      otp_testnet_connection.query(query, params, (error, results) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(results);
-          }
-        });
-    }
-    if (network === "Origintrail Parachain Mainnet") {
-      otp_connection.query(query, params, (error, results) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(results);
-          }
-        });
-    }
-  });
-}
-
-async function getOTPData(query, params, network) {
-  try {
-    const results = await executeOTPQuery(query, params, network);
-    return results;
-  } catch (error) {
-    console.error("Error executing query:", error);
-    throw error;
-  }
-}
+const express = require("express");
+const router = express.Router();
+const queryTypes = require("../../util/queryTypes");
+const queryDB = queryTypes.queryDB();
 
 /* GET explore page. */
 router.post("/", async function (req, res, next) {
@@ -58,6 +13,39 @@ router.post("/", async function (req, res, next) {
 
   timeframe = req.body.timeframe;
   network = req.body.network;
+  blockchain = req.body.blockchain;
+
+  if (!blockchain) {
+    blockchain = "othub_db";
+    query = `select chain_name,chain_id from blockchains where environment = ?`;
+    params = [network];
+    network = "";
+    blockchains = await queryDB
+      .getData(query, params, network, blockchain)
+      .then((results) => {
+        //console.log('Query results:', results);
+        return results;
+        // Use the results in your variable or perform further operations
+      })
+      .catch((error) => {
+        console.error("Error retrieving data:", error);
+      });
+  } else {
+    query = `select chain_name,chain_id from blockchains where environment = ? and chain_name = ?`;
+    params = [network, blockchain];
+    blockchain = "othub_db";
+    network = "";
+    blockchains = await queryDB
+      .getData(query, params, network, blockchain)
+      .then((results) => {
+        //console.log('Query results:', results);
+        return results;
+        // Use the results in your variable or perform further operations
+      })
+      .catch((error) => {
+        console.error("Error retrieving data:", error);
+      });
+  }
 
   query = `SELECT date, totalPubs, totalTracSpent, avgPubSize, avgPubPrice, avgBid, privatePubsPercentage, avgEpochsNumber
   FROM v_pubs_stats_monthly
@@ -66,46 +54,58 @@ router.post("/", async function (req, res, next) {
     query = `SELECT datetime as date, totalPubs, totalTracSpent, avgPubSize, avgPubPrice, avgBid, privatePubsPercentage, avgEpochsNumber
     FROM v_pubs_stats_hourly
     where datetime >= (select DATE_ADD(block_ts, interval -24 HOUR) as t from v_sys_staging_date)
-    order by datetime`
+    order by datetime`;
   }
   if (timeframe == "7d") {
     query = `SELECT datetime as date, totalPubs, totalTracSpent, avgPubSize, avgPubPrice, avgBid, privatePubsPercentage, avgEpochsNumber
     FROM v_pubs_stats_hourly
     where datetime >= (select DATE_ADD(block_ts, interval -168 HOUR) as t from v_sys_staging_date)
-    order by datetime`
+    order by datetime`;
   }
   if (timeframe == "30d") {
     query = `SELECT date, totalPubs, totalTracSpent , avgPubSize, avgPubPrice, avgBid, privatePubsPercentage, avgEpochsNumber
-    FROM v_pubs_stats 
+    FROM v_pubs_stats_daily 
     where date >= (select cast(DATE_ADD(block_ts, interval -1 MONTH) as date) as t from v_sys_staging_date)
-    order by date`
+    order by date`;
   }
   if (timeframe == "6m") {
     query = `SELECT date, totalPubs, totalTracSpent , avgPubSize, avgPubPrice, avgBid, privatePubsPercentage, avgEpochsNumber
-    FROM v_pubs_stats 
+    FROM v_pubs_stats_daily 
     where date >= (select cast(DATE_ADD(block_ts, interval -6 MONTH) as date) as t from v_sys_staging_date)
-    order by date`
+    order by date`;
   }
   if (timeframe == "1y") {
     query = `SELECT date, totalPubs, totalTracSpent , avgPubSize, avgPubPrice, avgBid, privatePubsPercentage, avgEpochsNumber
     FROM v_pubs_stats_monthly 
     where date >= (select cast(DATE_ADD(block_ts, interval -12 MONTH) as date) as t from v_sys_staging_date)
-    order by date`
+    order by date`;
   }
 
-  params = [];
-  data = await getOTPData(query, params, network)
-    .then((results) => {
-      //console.log('Query results:', results);
-      return results;
-      // Use the results in your variable or perform further operations
-    })
-    .catch((error) => {
-      console.error("Error retrieving data:", error);
-    });
+  let stats_data = [];
+  for (const blockchain of blockchains) {
+    params = [];
+    data = await queryDB
+      .getData(query, params, network, blockchain.chain_name)
+      .then((results) => {
+        //console.log('Query results:', results);
+        return results;
+        // Use the results in your variable or perform further operations
+      })
+      .catch((error) => {
+        console.error("Error retrieving data:", error);
+      });
+
+    chain_data = {
+      blockchain_name: blockchain.chain_name,
+      blockchain_id: blockchain.chain_id,
+      chart_data: data,
+    };
+
+    stats_data.push(chain_data);
+  }
 
   res.json({
-    chart_data: data,
+    chart_data: stats_data,
   });
 });
 

@@ -1,38 +1,10 @@
 require("dotenv").config();
-var express = require("express");
-var router = express.Router();
-const mysql = require("mysql");
-var ethUtil = require("ethereumjs-util");
+const express = require("express");
+const router = express.Router();
+const ethUtil = require("ethereumjs-util");
 const jwt = require("jsonwebtoken");
-
-const othubdb_connection = mysql.createConnection({
-  host: process.env.DBHOST,
-  user: process.env.DBUSER,
-  password: process.env.DBPASSWORD,
-  database: process.env.OTHUB_DB,
-});
-
-function executeOTHubQuery(query, params) {
-  return new Promise((resolve, reject) => {
-    othubdb_connection.query(query, params, (error, results) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve(results);
-      }
-    });
-  });
-}
-
-async function getOTHubData(query, params) {
-  try {
-    const results = await executeOTHubQuery(query, params);
-    return results;
-  } catch (error) {
-    console.error("Error executing query:", error);
-    throw error;
-  }
-}
+const queryTypes = require('../../util/queryTypes')
+const queryDB = queryTypes.queryDB()
 
 router.post("/", async function (req, res, next) {
   try{
@@ -44,10 +16,13 @@ router.post("/", async function (req, res, next) {
     data = req.body;
     public_address = data.public_address;
     signature = data.signature;
+    blockchain = "othub_db"
+    network = ""
   
     query = `select * from user_header where public_address = ?`;
     params = [public_address];
-    user_record = await getOTHubData(query, params)
+    user_record = await queryDB
+    .getData(query, params, network, blockchain)
       .then((results) => {
         return results;
       })
@@ -80,7 +55,8 @@ router.post("/", async function (req, res, next) {
         // Change user nonce
         query = `UPDATE user_header SET nonce = ? where public_address = ?`;
         params = [Math.floor(Math.random() * 1000000), public_address];
-        await getOTHubData(query, params)
+        await queryDB
+        .getData(query, params, network, blockchain)
           .then((results) => {
             return results;
           })

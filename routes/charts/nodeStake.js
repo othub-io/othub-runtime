@@ -1,53 +1,8 @@
 require("dotenv").config();
-var express = require("express");
-var router = express.Router();
-const mysql = require("mysql");
-const otp_connection = mysql.createConnection({
-  host: process.env.DBHOST,
-  user: process.env.DBUSER,
-  password: process.env.DBPASSWORD,
-  database: process.env.SYNC_DB,
-});
-
-const otp_testnet_connection = mysql.createConnection({
-  host: process.env.DBHOST,
-  user: process.env.DBUSER,
-  password: process.env.DBPASSWORD,
-  database: process.env.SYNC_DB_TESTNET,
-});
-
-function executeOTPQuery(query, params,network ) {
-  return new Promise((resolve, reject) => {
-    if (network == "Origintrail Parachain Testnet") {
-      otp_testnet_connection.query(query, params, (error, results) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(results);
-          }
-        });
-    }
-    if (network == "Origintrail Parachain Mainnet") {
-      otp_connection.query(query, params, (error, results) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(results);
-          }
-        });
-    }
-  });
-}
-
-async function getOTPData(query, params, network) {
-  try {
-    const results = await executeOTPQuery(query, params, network);
-    return results;
-  } catch (error) {
-    console.error("Error executing query:", error);
-    throw error;
-  }
-}
+const express = require("express");
+const router = express.Router();
+const queryTypes = require('../../util/queryTypes')
+const queryDB = queryTypes.queryDB()
 
 /* GET explore page. */
 router.post("/", async function (req, res, next) {
@@ -58,45 +13,90 @@ router.post("/", async function (req, res, next) {
 
   timeframe = req.body.timeframe;
   network = req.body.network;
+  blockchain = req.body.blockchain;
 
-  query = `SELECT date, nodesStake, nodesWithMoreThan50kStake, nodesWithLessThan50kStake FROM v_chart_node_stake_count_monthly order by date asc`;
+  if (!blockchain) {
+    blockchain = "othub_db";
+    query = `select chain_name,chain_id from blockchains where environment = ?`;
+    params = [network];
+    network = "";
+    blockchains = await queryDB
+      .getData(query, params, network, blockchain)
+      .then((results) => {
+        //console.log('Query results:', results);
+        return results;
+        // Use the results in your variable or perform further operations
+      })
+      .catch((error) => {
+        console.error("Error retrieving data:", error);
+      });
+  } else {
+    query = `select chain_name,chain_id from blockchains where environment = ? and chain_name = ?`;
+    params = [network, blockchain];
+    blockchain = "othub_db";
+    network = "";
+    blockchains = await queryDB
+      .getData(query, params, network, blockchain)
+      .then((results) => {
+        //console.log('Query results:', results);
+        return results;
+        // Use the results in your variable or perform further operations
+      })
+      .catch((error) => {
+        console.error("Error retrieving data:", error);
+      });
+  }
+
+  query = `SELECT date, combinedNodesStake,nodesWithMoreThan50kStake FROM v_nodes_stats_grouped_monthly order by date asc`;
   if (timeframe == "30d") {
-    query = `SELECT date, nodesStake, nodesWithMoreThan50kStake, nodesWithLessThan50kStake
+    query = `SELECT date, combinedNodesStake,nodesWithMoreThan50kStake
     FROM (
-        SELECT date, nodesStake, nodesWithMoreThan50kStake, nodesWithLessThan50kStake 
-        FROM v_chart_node_stake_count_daily 
+        SELECT date, combinedNodesStake,nodesWithMoreThan50kStake
+        FROM v_nodes_stats_grouped_daily 
         order by date desc 
         LIMIT 30
     ) AS stake
     ORDER BY date asc;`;
   }
   if (timeframe == "6m") {
-    query = `SELECT date, nodesStake, nodesWithMoreThan50kStake, nodesWithLessThan50kStake
+    query = `SELECT date, combinedNodesStake,nodesWithMoreThan50kStake
     FROM (
-        SELECT date, nodesStake, nodesWithMoreThan50kStake, nodesWithLessThan50kStake 
-        FROM v_chart_node_stake_count_daily 
+        SELECT date, combinedNodesStake,nodesWithMoreThan50kStake
+        FROM v_nodes_stats_grouped_daily 
         order by date desc 
         LIMIT 182
     ) AS stake
     ORDER BY date asc;`;
   }
   if (timeframe == "1y") {
-    query = `SELECT date, nodesStake, nodesWithMoreThan50kStake, nodesWithLessThan50kStake FROM v_chart_node_stake_count_monthly order by date asc LIMIT 365`
+    query = `SELECT date, combinedNodesStake, nodesWithMoreThan50kStake FROM v_nodes_stats_grouped_monthly order by date asc LIMIT 365`
   }
 
-  params = [];
-  data = await getOTPData(query, params, network)
-    .then((results) => {
-      //console.log('Query results:', results);
-      return results;
-      // Use the results in your variable or perform further operations
-    })
-    .catch((error) => {
-      console.error("Error retrieving data:", error);
-    });
+  let stats_data = [];
+  for (const blockchain of blockchains) {
+    params = [];
+    data = await queryDB
+      .getData(query, params, network, blockchain.chain_name)
+      .then((results) => {
+        //console.log('Query results:', results);
+        return results;
+        // Use the results in your variable or perform further operations
+      })
+      .catch((error) => {
+        console.error("Error retrieving data:", error);
+      });
+
+    chain_data = {
+      blockchain_name: blockchain.chain_name,
+      blockchain_id: blockchain.chain_id,
+      chart_data: data,
+    };
+
+    stats_data.push(chain_data);
+  }
 
   res.json({
-    chart_data: data,
+    chart_data: stats_data,
   });
 });
 

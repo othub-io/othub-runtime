@@ -1,8 +1,8 @@
 require("dotenv").config();
 const express = require("express");
 const router = express.Router();
-const queryTypes = require('../../util/queryTypes')
-const queryDB = queryTypes.queryDB()
+const queryTypes = require("../../util/queryTypes");
+const queryDB = queryTypes.queryDB();
 
 /* GET explore page. */
 router.post("/", async function (req, res, next) {
@@ -17,7 +17,7 @@ router.post("/", async function (req, res, next) {
 
   if (!blockchain) {
     blockchain = "othub_db";
-    query = `select chain_name,chain_id from blockchains where environment = ?`;
+    query = `select * from blockchains where environment = ?`;
     params = [network];
     network = "";
     blockchains = await queryDB
@@ -30,9 +30,9 @@ router.post("/", async function (req, res, next) {
       .catch((error) => {
         console.error("Error retrieving data:", error);
       });
-  } else {
-    query = `select chain_name,chain_id from blockchains where environment = ? and chain_name = ?`;
-    params = [network, blockchain];
+  }else{
+    query = `select * from blockchains where environment = ? and chain_name = ?`;
+    params = [network,blockchain];
     blockchain = "othub_db";
     network = "";
     blockchains = await queryDB
@@ -47,53 +47,48 @@ router.post("/", async function (req, res, next) {
       });
   }
 
-  query = `select * from v_nodes_stats_grouped_monthly`;
+  limit = 5000;
   if (timeframe == "24h") {
-    query = `SELECT datetime as date, estimatedEarnings1stEpochOnly, estimatedEarnings2plusEpochs, payouts
-    FROM (
-        SELECT datetime, estimatedEarnings1stEpochOnly, estimatedEarnings2plusEpochs, payouts
-        FROM v_nodes_stats_grouped_hourly_7d
-        ORDER BY datetime DESC
-        LIMIT 24
-    ) AS records
-    ORDER BY datetime ASC`;
+    limit = 1;
   }
   if (timeframe == "7d") {
-    query = `SELECT datetime as date, estimatedEarnings1stEpochOnly, estimatedEarnings2plusEpochs, payouts
-    FROM (
-        SELECT datetime, estimatedEarnings1stEpochOnly, estimatedEarnings2plusEpochs, payouts
-        FROM v_nodes_stats_grouped_hourly_7d
-        ORDER BY datetime DESC
-        LIMIT 168
-    ) AS records
-    ORDER BY datetime ASC`;
+    limit = 7;
   }
   if (timeframe == "30d") {
-    query = `SELECT date, estimatedEarnings1stEpochOnly, estimatedEarnings2plusEpochs, payouts
-    FROM (
-        SELECT date, estimatedEarnings1stEpochOnly, estimatedEarnings2plusEpochs, payouts
-        FROM v_nodes_stats_grouped_daily
-        ORDER BY date DESC
-        LIMIT 30
-    ) AS records
-    ORDER BY date ASC`;
-  }
-  if (timeframe == "6m") {
-    query = `SELECT date, estimatedEarnings1stEpochOnly, estimatedEarnings2plusEpochs, payouts
-    FROM (
-        SELECT date, estimatedEarnings1stEpochOnly, estimatedEarnings2plusEpochs, payouts
-        FROM v_nodes_stats_grouped_daily
-        ORDER BY date DESC
-        LIMIT 182
-    ) AS records
-    ORDER BY date ASC`;
+    limit = 30;
   }
   if (timeframe == "1y") {
-    query = `select * from v_nodes_stats_grouped_monthly ORDER BY date DESC LIMIT 12`
+    limit = 365;
   }
 
-  let stats_data = [];
+  let chart_data = [];
+
+  network = req.body.network;
+  query = `select date,cumulativePayouts from v_nodes_stats_grouped_monthly order by date`;
+  params = [];
+  blockchain = ""
+  data = await queryDB
+    .getData(query, params, network, blockchain)
+    .then((results) => {
+      //console.log('Query results:', results);
+      return results;
+      // Use the results in your variable or perform further operations
+    })
+    .catch((error) => {
+      console.error("Error retrieving data:", error);
+    });
+
+  chain_data = {
+    blockchain_name: "Total",
+    blockchain_id: "99999",
+    cum_total: data,
+  };
+
+  chart_data.push(chain_data);
+
+  network = "";
   for (const blockchain of blockchains) {
+    query = `select date,cumulativePayouts from v_nodes_stats_grouped_monthly order by date`;
     params = [];
     data = await queryDB
       .getData(query, params, network, blockchain.chain_name)
@@ -109,14 +104,14 @@ router.post("/", async function (req, res, next) {
     chain_data = {
       blockchain_name: blockchain.chain_name,
       blockchain_id: blockchain.chain_id,
-      chart_data: data,
+      cum_total: data,
     };
 
-    stats_data.push(chain_data);
+    chart_data.push(chain_data);
   }
 
   res.json({
-    chart_data: stats_data,
+    chart_data: chart_data,
   });
 });
 

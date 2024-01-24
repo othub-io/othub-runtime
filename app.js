@@ -20,6 +20,7 @@ app.use(cors())
 const homeRouter = require('./routes/home')
 const nodesRouter = require('./routes/nodes')
 const activityFeedRouter = require('./routes/activityFeed')
+const blockchainsRouter = require('./routes/blockchains')
 
 //dkg
 //const getRouter = require('./routes/dkg/get')
@@ -35,9 +36,9 @@ const inventoryRouter = require('./routes/inventory')
 //dashboard
 const dashboardNodesRouter = require('./routes/node-dashboard/nodes')
 const dashboardNodeStatsRouter = require('./routes/node-dashboard/nodeStats')
-const dashboardNodeStakeRouter = require('./routes/node-dashboard/nodeStake')
-const dashboardNodeCommitsRouter = require('./routes/node-dashboard/nodeCommits')
+const dashboardNodeDataRouter = require('./routes/node-dashboard/nodeData')
 const dashboardNodeSettingsRouter = require('./routes/node-dashboard/nodeSettings')
+const dashboardActivityFeedRouter = require('./routes/node-dashboard/activityFeed')
 
 
 //build
@@ -52,7 +53,8 @@ const deleteKeyRouter = require('./routes/build/delete-key')
 //charts
 const assetsMintedRouter = require('./routes/charts/assetsMinted')
 const earningsRouter = require('./routes/charts/earnings')
-const cumGraphRouter = require('./routes/charts/cumGraph')
+const cumPubsRouter = require('./routes/charts/cumPubs')
+const cumPayRouter = require('./routes/charts/cumPay')
 const nodeStakeRouter = require('./routes/charts/nodeStake')
 
 //images
@@ -68,6 +70,8 @@ const signRouter = require('./routes/auth/sign')
 app.use('/home', homeRouter)
 app.use('/nodes', nodesRouter)
 app.use('/activityFeed', activityFeedRouter)
+app.use('/blockchains', blockchainsRouter)
+
 
 //build
 app.use('/build', buildRouter)
@@ -92,14 +96,15 @@ app.use('/inventory', inventoryRouter)
 //staking
 app.use('/node-dashboard/nodes', dashboardNodesRouter)
 app.use('/node-dashboard/nodeStats', dashboardNodeStatsRouter)
-app.use('/node-dashboard/nodeStake', dashboardNodeStakeRouter)
-app.use('/node-dashboard/nodeCommits', dashboardNodeCommitsRouter)
+app.use('/node-dashboard/nodeData', dashboardNodeDataRouter)
 app.use('/node-dashboard/nodeSettings', dashboardNodeSettingsRouter)
+app.use('/node-dashboard/activityFeed', dashboardActivityFeedRouter)
 
 //charts
 app.use('/charts/assetsMinted', assetsMintedRouter)
 app.use('/charts/earnings', earningsRouter)
-app.use('/charts/cumGraph', cumGraphRouter)
+app.use('/charts/cumPubs', cumPubsRouter)
+app.use('/charts/cumPay', cumPayRouter)
 app.use('/charts/nodeStake', nodeStakeRouter)
 
 //images

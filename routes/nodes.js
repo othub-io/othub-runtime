@@ -1,53 +1,8 @@
 require('dotenv').config()
-var express = require('express')
-var router = express.Router()
-const mysql = require("mysql");
-const otp_connection = mysql.createConnection({
-  host: process.env.DBHOST,
-  user: process.env.DBUSER,
-  password: process.env.DBPASSWORD,
-  database: process.env.SYNC_DB,
-});
-
-const otp_testnet_connection = mysql.createConnection({
-  host: process.env.DBHOST,
-  user: process.env.DBUSER,
-  password: process.env.DBPASSWORD,
-  database: process.env.SYNC_DB_TESTNET,
-});
-
-function executeOTPQuery(query, params,network ) {
-  return new Promise((resolve, reject) => {
-    if (network == "Origintrail Parachain Testnet") {
-      otp_testnet_connection.query(query, params, (error, results) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(results);
-          }
-        });
-    }
-    if (network == "Origintrail Parachain Mainnet") {
-      otp_connection.query(query, params, (error, results) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(results);
-          }
-        });
-    }
-  });
-}
-
-async function getOTPData(query, params, network) {
-  try {
-    const results = await executeOTPQuery(query, params, network);
-    return results;
-  } catch (error) {
-    console.error("Error executing query:", error);
-    throw error;
-  }
-}
+const express = require('express')
+const router = express.Router()
+const queryTypes = require('../util/queryTypes')
+const queryDB = queryTypes.queryDB()
 
 /* GET explore page. */
 router.post('/', async function (req, res, next) {
@@ -57,22 +12,66 @@ router.post('/', async function (req, res, next) {
   }
 
   network = req.body.network;
+  blockchain = req.body.blockchain;
+  order_by = req.body.order_by;
 
-  console.log(network)
-  query = `select * from v_nodes where nodeStake >= 50000 order by ? desc`
-  params = ['nodeStake']
-  v_nodes = await getOTPData(query, params, network)
-    .then(results => {
-      //console.log('Query results:', results);
-      return results
-      // Use the results in your variable or perform further operations
+  if (!blockchain) {
+    blockchain = "othub_db";
+    query = `select chain_name,chain_id from blockchains where environment = ?`;
+    params = [network];
+    network = "";
+    blockchains = await queryDB
+      .getData(query, params, network, blockchain)
+      .then((results) => {
+        //console.log('Query results:', results);
+        return results;
+        // Use the results in your variable or perform further operations
+      })
+      .catch((error) => {
+        console.error("Error retrieving data:", error);
+      });
+  }else{
+    query = `select chain_name,chain_id from blockchains where environment = ? and chain_name = ?`;
+    params = [network,blockchain];
+    blockchain = "othub_db";
+    network = "";
+    blockchains = await queryDB
+      .getData(query, params, network, blockchain)
+      .then((results) => {
+        //console.log('Query results:', results);
+        return results;
+        // Use the results in your variable or perform further operations
+      })
+      .catch((error) => {
+        console.error("Error retrieving data:", error);
+      });
+  }
+
+  let nodes_data = [];
+  for (const blockchain of blockchains) {
+    query = `select * from v_nodes where nodeStake >= 50000 AND nodeId != '0' order by ${order_by} asc`
+    params = []
+    nodes = await queryDB.getData(query, params, network, blockchain.chain_name)
+      .then(results => {
+        //console.log('Query results:', results);
+        return results
+        // Use the results in your variable or perform further operations
+      })
+      .catch(error => {
+        console.error('Error retrieving data:', error)
     })
-    .catch(error => {
-      console.error('Error retrieving data:', error)
-    })
+
+    node_data = {
+      blockchain_name: blockchain.chain_name,
+      blockchain_id: blockchain.chain_id,
+      nodes: nodes
+    };
+
+    nodes_data.push(node_data);
+  }
 
   res.json({
-    v_nodes: v_nodes,
+    nodes: nodes_data,
     msg: ``
   })
 })
