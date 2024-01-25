@@ -7,43 +7,47 @@ const gnosis_mainnet = require("../config/sync_gnosis_mainnet");
 const gnosis_testnet = require("../config/sync_gnosis_testnet");
 
 module.exports = executeQuery = async (query, params, network, blockchain) => {
-  return new Promise(async (resolve, reject) => {
-    let pool;
-    
-    if (blockchain === "othub_db") {
-      pool = othub_db;
-    }
-
-    if (blockchain === "Chiado Testnet") {
-      pool = gnosis_testnet;
-    }
-
-    if (blockchain === "Gnosis Mainnet") {
-      pool = gnosis_mainnet;
-    }
-
-    if (blockchain === "NeuroWeb Testnet") {
-      pool = neuroweb_testnet;
-    }
-
-    if (blockchain === "NeuroWeb Mainnet") {
-      pool = neuroweb_mainnet;
-    }
-
-    if (network === "DKG Mainnet") {
-      pool = dkg_mainnet;
-    }
-
-    if (network === "DKG Testnet") {
-      pool = dkg_testnet;
-    }
-
-    await pool.query(query, params, (error, results) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve(results);
+  try{
+    return new Promise(async (resolve, reject) => {
+      let pool;
+      
+      if (blockchain === "othub_db") {
+        pool = othub_db;
       }
+  
+      if (blockchain === "Chiado Testnet") {
+        pool = gnosis_testnet;
+      }
+  
+      if (blockchain === "Gnosis Mainnet") {
+        pool = gnosis_mainnet;
+      }
+  
+      if (blockchain === "NeuroWeb Testnet") {
+        pool = neuroweb_testnet;
+      }
+  
+      if (blockchain === "NeuroWeb Mainnet") {
+        pool = neuroweb_mainnet;
+      }
+  
+      if (network === "DKG Mainnet") {
+        pool = dkg_mainnet;
+      }
+  
+      if (network === "DKG Testnet") {
+        pool = dkg_testnet;
+      }
+  
+      await pool.query(query, params, (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results);
+        }
+      });
     });
-  });
+  }catch(e){
+    console.log(e)
+  }
 };
