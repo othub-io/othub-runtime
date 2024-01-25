@@ -15,6 +15,12 @@ router.post("/", async function (req, res, next) {
       network = "";
     }
 
+    if(blockchain !== "Chiado Testnet" && blockchain !== "NeuroWeb Testnet" && blockchain !== "Gnosis Mainnet" && blockchain !== "NeuroWeb Mainnet"){
+      res.json({
+        activity_data: [],
+      });
+    }
+
     limit = "200";
     conditions = [];
     params = []
