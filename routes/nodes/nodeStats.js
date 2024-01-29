@@ -7,11 +7,11 @@ const queryDB = queryTypes.queryDB();
 /* GET explore page. */
 router.post("/", async function (req, res, next) {
   timeframe = req.body.timeframe;
-  const node = req.body.node;
+  const nodeId = req.body.nodeId;
   let blockchain = req.body.blockchain;
   let network = "";
   
-  params = [node];
+  params = [nodeId];
   query = `select nodeStake from v_nodes where nodeStake >= 50000 AND nodeId in (?)`;
   node_res = await queryDB
     .getData(query, params, network, blockchain)
@@ -36,7 +36,6 @@ router.post("/", async function (req, res, next) {
       console.error("Error retrieving data:", error);
     });
 
-    console.log(nodes_stats)
   stats_data = {
     blockchain_name: blockchain,
     nodes: node_res.length,
@@ -49,7 +48,6 @@ router.post("/", async function (req, res, next) {
     payouts: nodes_stats[0].cumulativePayouts,
   };
 
-  console.log(stats_data)
   res.json(stats_data);
 });
 
