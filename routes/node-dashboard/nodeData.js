@@ -53,23 +53,23 @@ router.post("/", async function (req, res, next) {
     query = `SELECT tokenName,date, pubsCommited,pubsCommited1stEpochOnly,cumulativePubsCommited,cumulativePubsCommited1stEpochOnly,estimatedEarnings,estimatedEarnings1stEpochOnly,cumulativeEstimatedEarnings,cumulativeEstimatedEarnings1stEpochOnly,payouts,cumulativePayouts,nodeStake FROM v_nodes_stats_monthly WHERE nodeId in (${ques}) order by date asc`;
 
     if (timeframe === "24h") {
-      query = `SELECT tokenName,datetime as date, pubsCommited,pubsCommited1stEpochOnly,cumulativePubsCommited,cumulativePubsCommited1stEpochOnly,estimatedEarnings,estimatedEarnings1stEpochOnly,cumulativeEstimatedEarnings,cumulativeEstimatedEarnings1stEpochOnly,payouts,cumulativePayouts,nodeStake FROM v_nodes_stats_hourly_7d WHERE date >= (select cast(DATE_ADD(block_ts, interval -24 HOUR) as date) as t from v_sys_staging_date) AND nodeId in (?) order by date asc`;
+      query = `SELECT tokenName,datetime as date, pubsCommited,pubsCommited1stEpochOnly,cumulativePubsCommited,cumulativePubsCommited1stEpochOnly,estimatedEarnings,estimatedEarnings1stEpochOnly,cumulativeEstimatedEarnings,cumulativeEstimatedEarnings1stEpochOnly,payouts,cumulativePayouts,nodeStake FROM v_nodes_stats_hourly_7d WHERE date >= (select cast(DATE_ADD(block_ts, interval -24 HOUR) as date) as t from v_sys_staging_date) AND nodeId in (${ques}) order by date asc`;
     }
 
     if (timeframe === "7d") {
-      query = `SELECT tokenName,datetime as date, pubsCommited,pubsCommited1stEpochOnly,cumulativePubsCommited,cumulativePubsCommited1stEpochOnly,estimatedEarnings,estimatedEarnings1stEpochOnly,cumulativeEstimatedEarnings,cumulativeEstimatedEarnings1stEpochOnly,payouts,cumulativePayouts,nodeStake FROM v_nodes_stats_hourly_7d WHERE date >= (select cast(DATE_ADD(block_ts, interval -168 HOUR) as date) as t from v_sys_staging_date) AND nodeId in (?) order by date asc`;
+      query = `SELECT tokenName,datetime as date, pubsCommited,pubsCommited1stEpochOnly,cumulativePubsCommited,cumulativePubsCommited1stEpochOnly,estimatedEarnings,estimatedEarnings1stEpochOnly,cumulativeEstimatedEarnings,cumulativeEstimatedEarnings1stEpochOnly,payouts,cumulativePayouts,nodeStake FROM v_nodes_stats_hourly_7d WHERE date >= (select cast(DATE_ADD(block_ts, interval -168 HOUR) as date) as t from v_sys_staging_date) AND nodeId in (${ques}) order by date asc`;
     }
 
     if (timeframe === "30d") {
-      query = `SELECT tokenName,date, pubsCommited,pubsCommited1stEpochOnly,cumulativePubsCommited,cumulativePubsCommited1stEpochOnly,estimatedEarnings,estimatedEarnings1stEpochOnly,cumulativeEstimatedEarnings,cumulativeEstimatedEarnings1stEpochOnly,payouts,cumulativePayouts,nodeStake FROM v_nodes_stats_daily WHERE date >= (select cast(DATE_ADD(block_ts, interval -1 MONTH) as date) as t from v_sys_staging_date) AND nodeId in (?) order by date asc`;
+      query = `SELECT tokenName,date, pubsCommited,pubsCommited1stEpochOnly,cumulativePubsCommited,cumulativePubsCommited1stEpochOnly,estimatedEarnings,estimatedEarnings1stEpochOnly,cumulativeEstimatedEarnings,cumulativeEstimatedEarnings1stEpochOnly,payouts,cumulativePayouts,nodeStake FROM v_nodes_stats_daily WHERE date >= (select cast(DATE_ADD(block_ts, interval -1 MONTH) as date) as t from v_sys_staging_date) AND nodeId in (${ques}) order by date asc`;
     }
 
     if (timeframe === "6m") {
-      query = `SELECT tokenName,date, pubsCommited,pubsCommited1stEpochOnly,cumulativePubsCommited,cumulativePubsCommited1stEpochOnly,estimatedEarnings,estimatedEarnings1stEpochOnly,cumulativeEstimatedEarnings,cumulativeEstimatedEarnings1stEpochOnly,payouts,cumulativePayouts,nodeStake FROM v_nodes_stats_daily WHERE date >= (select cast(DATE_ADD(block_ts, interval -6 MONTH) as date) as t from v_sys_staging_date) AND nodeId in (?) order by date asc`;
+      query = `SELECT tokenName,date, pubsCommited,pubsCommited1stEpochOnly,cumulativePubsCommited,cumulativePubsCommited1stEpochOnly,estimatedEarnings,estimatedEarnings1stEpochOnly,cumulativeEstimatedEarnings,cumulativeEstimatedEarnings1stEpochOnly,payouts,cumulativePayouts,nodeStake FROM v_nodes_stats_daily WHERE date >= (select cast(DATE_ADD(block_ts, interval -6 MONTH) as date) as t from v_sys_staging_date) AND nodeId in (${ques}) order by date asc`;
     }
 
     if (timeframe === "1y") {
-      query = `SELECT tokenName,date, pubsCommited,pubsCommited1stEpochOnly,cumulativePubsCommited,cumulativePubsCommited1stEpochOnly,estimatedEarnings,estimatedEarnings1stEpochOnly,cumulativeEstimatedEarnings,cumulativeEstimatedEarnings1stEpochOnly,payouts,cumulativePayouts,nodeStake FROM v_nodes_stats_monthly WHERE date >= (select cast(DATE_ADD(block_ts, interval -12 MONTH) as date) as t from v_sys_staging_date) AND nodeId in (?) order by date asc`;
+      query = `SELECT tokenName,date, pubsCommited,pubsCommited1stEpochOnly,cumulativePubsCommited,cumulativePubsCommited1stEpochOnly,estimatedEarnings,estimatedEarnings1stEpochOnly,cumulativeEstimatedEarnings,cumulativeEstimatedEarnings1stEpochOnly,payouts,cumulativePayouts,nodeStake FROM v_nodes_stats_monthly WHERE date >= (select cast(DATE_ADD(block_ts, interval -12 MONTH) as date) as t from v_sys_staging_date) AND nodeId in (${ques}) order by date asc`;
     }
 
     data = await queryDB
