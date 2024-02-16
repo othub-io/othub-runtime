@@ -69,19 +69,19 @@ router.post("/", async function (req, res, next) {
         console.error("Error retrieving data:", error);
       });
 
-    query = `select totalTracSpent from v_pubs_stats_daily
-        WHERE date < (SELECT MAX(date) FROM v_pubs_stats_daily)
-        order by date`;
-    let pubs_stats = await queryDB
-      .getData(query, params, network, blockchain.chain_name)
-      .then((results) => {
-        //console.log('Query results:', results);
-        return results;
-        // Use the results in your variable or perform further operations
-      })
-      .catch((error) => {
-        console.error("Error retrieving data:", error);
-      });
+    // query = `select totalTracSpent from v_pubs_stats_daily
+    //     WHERE date < (SELECT MAX(date) FROM v_pubs_stats_daily)
+    //     order by date`;
+    // let pubs_stats = await queryDB
+    //   .getData(query, params, network, blockchain.chain_name)
+    //   .then((results) => {
+    //     //console.log('Query results:', results);
+    //     return results;
+    //     // Use the results in your variable or perform further operations
+    //   })
+    //   .catch((error) => {
+    //     console.error("Error retrieving data:", error);
+    //   });
 
     query = `select totalPubs,totalTracSpent from v_pubs_stats_last24h order by datetime`;
     let pubs_stats_last24h = await queryDB
@@ -95,10 +95,17 @@ router.post("/", async function (req, res, next) {
         console.error("Error retrieving data:", error);
       });
 
-    let totalTracSpent = 0;
-    for (const pub of pubs_stats) {
-      totalTracSpent = totalTracSpent + Number(pub.totalTracSpent);
-    }
+    query = `select totalTracSpent from v_pubs_stats_total`;
+    let totalTracSpent = await queryDB
+    .getData(query, params, network, blockchain.chain_name)
+    .then((results) => {
+      //console.log('Query results:', results);
+      return results;
+      // Use the results in your variable or perform further operations
+    })
+    .catch((error) => {
+      console.error("Error retrieving data:", error);
+    });
 
     let totalStake = 0;
     for (const node of nodes) {
@@ -111,7 +118,7 @@ router.post("/", async function (req, res, next) {
       nodes: nodes.length,
       pubs_stats_last24h: pubs_stats_last24h,
       pub_count: pub_count[0].count,
-      totalTracSpent: totalTracSpent,
+      totalTracSpent: totalTracSpent[0].totalTracSpent,
       totalStake: totalStake,
     };
 
