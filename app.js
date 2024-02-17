@@ -23,6 +23,7 @@ const nodesDataRouter = require('./routes/nodes/nodeData')
 const nodesStatsRouter = require('./routes/nodes/nodeStats')
 const activityFeedRouter = require('./routes/activityFeed')
 const blockchainsRouter = require('./routes/blockchains')
+const stakingRouter = require('./routes/staking')
 
 //dkg
 //const getRouter = require('./routes/dkg/get')
@@ -97,7 +98,7 @@ app.use('/inventory', inventoryRouter)
 //app.use('/publish', publishRouter)
 //app.use('/search', searchRouter)
 
-//staking
+//node dashboard
 app.use('/node-dashboard/nodes', dashboardNodesRouter)
 app.use('/node-dashboard/nodeStats', dashboardNodeStatsRouter)
 app.use('/node-dashboard/nodeData', dashboardNodeDataRouter)
@@ -110,6 +111,9 @@ app.use('/charts/earnings', earningsRouter)
 app.use('/charts/cumPubs', cumPubsRouter)
 app.use('/charts/cumPay', cumPayRouter)
 app.use('/charts/nodeStake', nodeStakeRouter)
+
+//staking
+app.use('/staking', stakingRouter)
 
 //images
 app.use('/images', imagesRouter)
