@@ -24,6 +24,7 @@ const nodesStatsRouter = require('./routes/nodes/nodeStats')
 const activityFeedRouter = require('./routes/activityFeed')
 const blockchainsRouter = require('./routes/blockchains')
 const stakingRouter = require('./routes/staking')
+const syncStatusRouter = require('./routes/sync_status')
 
 //dkg
 //const getRouter = require('./routes/dkg/get')
@@ -124,6 +125,9 @@ app.use('/asset/getHistory', assetHistoryRouter)
 //auth
 app.use('/auth/register', registerRouter)
 app.use('/auth/sign', signRouter)
+
+//misc
+app.use('/sync_status', syncStatusRouter)
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
