@@ -35,7 +35,6 @@ router.post("/", async function (req, res, next) {
         console.error("Error retrieving data:", error);
       });
 
-      console.log(sync_info[0])
     if (sync_info[1].val > 30) {
       sync_status = false;
     }
@@ -48,7 +47,6 @@ router.post("/", async function (req, res, next) {
     sync.push(record);
   }
 
-  console.log(sync)
   res.json({
     sync: sync,
     msg: ``,
