@@ -31,7 +31,7 @@ router.post("/", async function (req, res, next) {
     let blockchain = node.blockchain_name
     let blockchain_id = node.blockchain_id
 
-    query = `select tokenName,nodeStake from v_nodes where nodeStake >= 50000 AND nodeId in (?)`;
+    query = `select tokenName,nodeStake from v_nodes where nodeId in (?)`;
       node_res = await queryDB
         .getData(query, node.nodeId, network, blockchain)
         .then((results) => {
