@@ -12,7 +12,6 @@ router.post("/", async function (req, res, next) {
   const uniqueBlockchains = [];
   let blockchains = req.body.blockchain;
 
-  console.log(nodes)
   if (!blockchains) {
     blockchains = nodes
       .map((node) => node.blockchain_name)
