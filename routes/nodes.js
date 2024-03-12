@@ -24,7 +24,7 @@ router.post("/", async function (req, res, next) {
   }
 
   query = `select * from v_nodes where nodeStake >= 50000 AND nodeId != '0' order by ${order_by} asc`;
-  params = [];
+  let params = [];
   nodes = await queryDB
     .getData(query, params, network, blockchain)
     .then((results) => {
@@ -36,9 +36,44 @@ router.post("/", async function (req, res, next) {
       console.error("Error retrieving data:", error);
     });
 
+    network = ""
+    let node_list = []
+    for(const node of nodes){
+      blockchain = node.chainName
+      query = `select estimatedEarnings from v_nodes_stats_latest where nodeId = ?`;
+      params = [node.nodeId];
+      dkg_node = await queryDB
+        .getData(query, params, network, blockchain)
+        .then((results) => {
+          //console.log('Query results:', results);
+          return results;
+          // Use the results in your variable or perform further operations
+        })
+        .catch((error) => {
+          console.error("Error retrieving data:", error);
+        });
+
+      let after_fee_earnings = dkg_node[0].estimatedEarnings - (dkg_node[0].estimatedEarnings * (node.nodeOperatorFee / 100))
+      let shareValue = (node.nodeStake + after_fee_earnings) / node.nodeStake
+      
+      node_obj = {
+        chainId: node.chainId,
+        chainName: node.chainName,
+        nodeId: node.nodeId,
+        tokenName: node.tokenName,
+        tokenSymbol: node.tokenSymbol,
+        nodeStake: node.nodeStake,
+        nodeOperatorFee: node.nodeOperatorFee,
+        nodeAsk: node.nodeAsk,
+        nodeAgeDays:node.nodeAgeDays,
+        shareValue: shareValue
+      }
+
+      node_list.push(node_obj)
+    }
 
   res.json({
-    nodes: nodes,
+    nodes: node_list,
     msg: ``,
   });
 });
