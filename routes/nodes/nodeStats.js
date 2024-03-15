@@ -48,19 +48,21 @@ router.post("/", async function (req, res, next) {
       console.error("Error retrieving data:", error);
     });
 
-  stats_data = {
-    blockchain_name: blockchain,
-    nodes: node_res.length,
-    totalStake: node_res[0].nodeStake,
-    pubs_commited_24h: nodes_stats_last24h[0].pubsCommited ? (nodes_stats_last24h[0].pubsCommited ) : (0),
-    pubs_commited: nodes_stats_daily[0].cumulativePubsCommited ? (nodes_stats_daily[0].cumulativePubsCommited) :(0),
-    earnings_24h: nodes_stats_last24h[0].estimatedEarnings ? (nodes_stats_last24h[0].estimatedEarnings) :(0),
-    earnings: nodes_stats_daily[0].cumulativeEstimatedEarnings ? (nodes_stats_daily[0].cumulativeEstimatedEarnings) :(0),
-    payouts_24h: nodes_stats_last24h[0].cumulativePayouts ? (nodes_stats_last24h[0].cumulativePayouts) :(0),
-    payouts: nodes_stats_daily[0].cumulativePayouts ? (nodes_stats_daily[0].cumulativePayouts) :(0),
-  };
-
-  res.json(stats_data);
+  if(nodes_stats_last24h.length > 0){
+    stats_data = {
+      blockchain_name: blockchain,
+      nodes: node_res.length,
+      totalStake: node_res[0].nodeStake,
+      pubs_commited_24h: nodes_stats_last24h[0].pubsCommited,
+      pubs_commited: nodes_stats_daily[0].cumulativePubsCommited,
+      earnings_24h: nodes_stats_last24h[0].estimatedEarnings,
+      earnings: nodes_stats_daily[0].cumulativeEstimatedEarnings,
+      payouts_24h: nodes_stats_last24h[0].cumulativePayouts,
+      payouts: nodes_stats_daily[0].cumulativePayouts,
+    };
+  
+    res.json(stats_data);
+  }
 });
 
 module.exports = router;
