@@ -40,7 +40,7 @@ router.post("/", async function (req, res, next) {
     let node_list = []
     for(const node of nodes){
       blockchain = node.chainName
-      query = `select estimatedEarnings from v_nodes_stats_latest where nodeId = ?`;
+      query = `select estimatedEarnings,cumulativePayouts from v_nodes_stats_latest where nodeId = ?`;
       params = [node.nodeId];
       dkg_node = await queryDB
         .getData(query, params, network, blockchain)
@@ -54,7 +54,7 @@ router.post("/", async function (req, res, next) {
         });
 
       let after_fee_earnings = dkg_node[0].estimatedEarnings - (dkg_node[0].estimatedEarnings * (node.nodeOperatorFee / 100))
-      let shareValue = (node.nodeStake + after_fee_earnings) / node.nodeStake
+      let shareValue = (node.nodeStake + after_fee_earnings - dkg_node[0].cumulativePayouts) / node.nodeStake
       
       node_obj = {
         chainId: node.chainId,
