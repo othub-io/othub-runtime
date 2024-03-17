@@ -53,8 +53,8 @@ router.post("/", async function (req, res, next) {
           console.error("Error retrieving data:", error);
         });
 
-      //let after_fee_earnings = dkg_node[0].estimatedEarnings - (dkg_node[0].estimatedEarnings * (node.nodeOperatorFee / 100))
-      //let shareValue = (node.nodeStake + after_fee_earnings - dkg_node[0].cumulativePayouts) / node.nodeStake
+      let after_fee_earnings = dkg_node[0].estimatedEarnings - (dkg_node[0].estimatedEarnings * (node.nodeOperatorFee / 100))
+      let shareValue = (node.nodeStake + after_fee_earnings - dkg_node[0].cumulativePayouts) / node.nodeStake
       
       node_obj = {
         chainId: node.chainId,
@@ -66,7 +66,7 @@ router.post("/", async function (req, res, next) {
         nodeOperatorFee: node.nodeOperatorFee,
         nodeAsk: node.nodeAsk,
         nodeAgeDays:node.nodeAgeDays,
-        shareValue: 1
+        shareValue: shareValue
       }
 
       node_list.push(node_obj)
