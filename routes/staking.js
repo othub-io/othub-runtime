@@ -31,7 +31,7 @@ router.post("/", async function (req, res, next) {
     let blockchain = node.blockchain_name
     let blockchain_id = node.blockchain_id
 
-    query = `select tokenName,nodeStake from v_nodes where nodeId in (?)`;
+    query = `select tokenName,nodeStake,nodeOperatorFee from v_nodes where nodeId in (?)`;
       node_res = await queryDB
         .getData(query, node.nodeId, network, blockchain)
         .then((results) => {
@@ -68,7 +68,7 @@ router.post("/", async function (req, res, next) {
         m_wallet: node.m_wallet,
         o_wallet: node.o_wallet,
         totalStake: totalStake,
-        //op_fee: node_res[0].nodeOperatorFee,
+        op_fee: node_res[0].nodeOperatorFee,
         pubs_commited_24h: nodes_stats[0].pubsCommited,
         pubs_commited: nodes_stats[0].cumulativePubsCommited,
         earnings_24h: nodes_stats[0].estimatedEarnings,

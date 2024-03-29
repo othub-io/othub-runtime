@@ -11,14 +11,14 @@ router.post('/', async function (req, res, next) {
     ip = req.headers['x-forwarded-for']
   }
 
-  network = req.body.network;
-  blockchain = "othub_db"
+  let network = req.body.network;
+  let blockchain = "othub_db"
 
-  query = `select * from blockchains where environment = ?`
-  params = [network]
+  let query = `select * from blockchains where environment = ?`
+  let params = [network]
 
   network = "";
-  blockchains = await queryDB.getData(query, params, network, blockchain)
+  let blockchains = await queryDB.getData(query, params, network, blockchain)
     .then(results => {
       //console.log('Query results:', results);
       return results
