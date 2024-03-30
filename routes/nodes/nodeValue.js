@@ -51,7 +51,6 @@ router.post("/", async function (req, res, next) {
       data: data,
     };
 
-    console.log(chain_data)
     res.json({
       chart_data: chain_data,
     });
