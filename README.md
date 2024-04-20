@@ -1,4 +1,4 @@
-# OTHub Runtime
+# OTHub Runtime !!!!! DEPRECIATED !!!!!
 
 OTHub Runtime is a community managed NodeJS backend specifically built to work in tandem with the [othub-react](https://github.com/othub-io/othub-react) and [otp-sync](https://github.com/othub-io/otp-sync) repositories. It is a critical infrastructure for [OTHub](https://github.com/othub-io). 
 
